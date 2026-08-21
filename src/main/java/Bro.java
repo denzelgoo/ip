@@ -24,120 +24,105 @@ public class Bro {
 
         ArrayList<Task> tasks = new ArrayList<>();
         Scanner scanner = new Scanner(System.in);
-        String input = scanner.nextLine();
-        while (!input.trim().equalsIgnoreCase("bye")) {
+        while (true) {
+            String input = scanner.nextLine();
+            if (input.equalsIgnoreCase("bye")) {
+                break;
+            }
+
             System.out.println("\t" + line);
 
             try {
-                String[] command = input.trim().split(" ", 2);
-                command[0] = command[0].toLowerCase();
-                if (command.length == 1 && command[0].equals("list")) {
-                    // list the tasks stored
-                    System.out.println("\t" + "Here are the tasks you have bro:");
-                    for (int i = 0; i < tasks.size(); i++) {
-                        System.out.println("\t" + (i + 1) + ". " + tasks.get(i));
+                String[] inputParts = input.trim().split(" ", 2);
+                Command command = Command.fromString(inputParts[0]);
+                String arguments = inputParts.length > 1 ? inputParts[1].trim() : "";
+
+                switch (command) {
+                    case LIST -> {
+                        // list the tasks stored
+                        System.out.println("\t" + "Here are the tasks you have bro:");
+                        for (int i = 0; i < tasks.size(); i++) {
+                            System.out.println("\t" + (i + 1) + ". " + tasks.get(i));
+                        }
                     }
-                } else if (command[0].equals("mark") || command[0].equals("unmark")) {
-                    // mark or unmark tasks as done
-                    int listIndex = Integer.parseInt(command[1]) - 1;
-                    Task task = tasks.get(listIndex);
-                    if (command[0].equals("mark")) {
-                        task.markDone();
-                        System.out.println("\t" + "Nice bro, I've marked this task as done for you:");
+                    case MARK, UNMARK -> {
+                        // mark or unmark tasks as done
+                        if (arguments.isEmpty()) {
+                            throw new BroException("\t" + "Yo which task do you want to mark/unmark bro?");
+                        }
+                        int listIndex = Integer.parseInt(arguments) - 1;
+                        Task task = tasks.get(listIndex);
+                        if (command == Command.MARK) {
+                            task.markDone();
+                            System.out.println("\t" + "Nice bro, I've marked this task as done for you:");
+                            System.out.println("\t" + "  " + task);
+                        } else {
+                            // unmark command
+                            task.unmarkDone();
+                            System.out.println("\t" + "That's tough bro, I've marked this task as not done yet:");
+                            System.out.println("\t" + "  " + task);
+                        }
+                    }
+                    case DELETE -> {
+                        if (arguments.isEmpty()) {
+                            throw new BroException("\t" + "Which task do you want to delete bro?");
+                        }
+                        int listIndex = Integer.parseInt(arguments) - 1;
+                        Task task = tasks.remove(listIndex);
+                        System.out.println("\t" + "No problem bro, I've removed this task:");
                         System.out.println("\t" + "  " + task);
-                    } else {
-                        // unmark command
-                        task.unmarkDone();
-                        System.out.println("\t" + "That's tough bro, I've marked this task as not done yet:");
-                        System.out.println("\t" + "  " + task);
+                        printTaskCount(tasks.size());
                     }
-                } else if (command[0].equals("delete")) {
-                    // delete the task
-                    int listIndex = Integer.parseInt(command[1]) - 1;
-                    Task task = tasks.get(listIndex);
-                    tasks.remove(listIndex);
-                    System.out.println("\t" + "No problem bro, I've removed this task:");
-                    System.out.println("\t" + "  " + task);
-
-                    if (tasks.size() > 1) {
-                        System.out.println("\t" + "Now you have " + tasks.size() + " tasks in the list.");
-                    } else {
-                        System.out.println("\t" + "Now you have " + tasks.size() + " task in the list.");
+                    case TODO -> {
+                        if (arguments.isEmpty()) {
+                            throw new BroException("\t" + "Sorry bro, you can't have an empty todo.");
+                        }
+                        Todo newTodo = new Todo(arguments);
+                        tasks.add(newTodo);
+                        System.out.println("\t" + "I gotchu bro, added this task:\n\t  " + newTodo);
+                        printTaskCount(tasks.size());
                     }
-                } else if (command.length > 1) {
-                    // general case: add a task to the list
-                    switch (command[0]) {
-                        case "todo" -> {
-                            Todo newTodo = new Todo(command[1]);
-                            tasks.add(newTodo);
-                            System.out.println("\t" + "I gotchu bro, added this task:\n\t  " + newTodo);
-
-                            if (tasks.size() > 1) {
-                                System.out.println("\t" + "Now you have " + tasks.size() + " tasks in the list.");
-                            } else {
-                                System.out.println("\t" + "Now you have " + tasks.size() + " task in the list.");
-                            }
+                    case DEADLINE -> {
+                        if (arguments.isEmpty()) {
+                            throw new BroException("\t" + "Sorry bro, you can't have an empty deadline.");
                         }
-                        case "deadline" -> {
-                            String[] details = command[1].split(" /by ", 2);
-                            if (details.length == 1) {
-                                // there is no /by, wrong format for deadline task
-                                throw new BroException("\t" + "I think you forgot to add the deadline bro, can you try again? Make sure you write 'deadline [task] /by [deadline]'");
-                            }
-                            Deadline newDeadline = new Deadline(details[0], details[1]);
-                            tasks.add(newDeadline);
-                            System.out.println("\t" + "I gotchu bro, added this task:\n\t  " + newDeadline);
-
-                            if (tasks.size() > 1) {
-                                System.out.println("\t" + "Now you have " + tasks.size() + " tasks in the list.");
-                            } else {
-                                System.out.println("\t" + "Now you have " + tasks.size() + " task in the list.");
-                            }
+                        String[] details = arguments.split(" /by ", 2);
+                        if (details.length == 1 || details[0].isBlank() || details[1].isBlank()) {
+                            throw new BroException("\t" + "I think you forgot to add the deadline bro, write 'deadline [task] /by [deadline]'");
                         }
-                        case "event" -> {
-                            Pattern pattern = Pattern.compile("(?<task>.+?)\\s+/from\\s+(?<start>.+?)\\s+/to\\s+(?<end>.+)");
-                            Matcher matcher = pattern.matcher(command[1]);
-                            String task = "";
-                            String start = "";
-                            String end = "";
-
-                            if (matcher.find()) {
-                                task = matcher.group("task");   // "project meeting"
-                                start = matcher.group("start"); // "Mon 2pm"
-                                end = matcher.group("end");     // "4pm"
-
-                                Event newEvent = new Event(task, start, end);
-                                tasks.add(newEvent);
-                                System.out.println("\t" + "I gotchu bro, added this task:\n\t  " + newEvent);
-
-                                if (tasks.size() > 1) {
-                                    System.out.println("\t" + "Now you have " + tasks.size() + " tasks in the list.");
-                                } else {
-                                    System.out.println("\t" + "Now you have " + tasks.size() + " task in the list.");
-                                }
-                            } else {
-                                throw new BroException("\t" + "I think you messed up the format of the event bro, can you try again? Make sure you write 'event [task] /from [start] /to [end]'");
-                            }
-                        }
-                        default ->
-                            // invalid command
-                                throw new BroException("\t" + "I don't get what you're trying to say bro, can you try again?");
+                        Deadline newDeadline = new Deadline(details[0], details[1]);
+                        tasks.add(newDeadline);
+                        System.out.println("\t" + "I gotchu bro, added this task:\n\t  " + newDeadline);
+                        printTaskCount(tasks.size());
                     }
-                } else {
-                    // the command is either an invalid command or a wrongly used command
-                    if (command[0].equals("todo") || command[0].equals("deadline") || command[0].equals("event")) {
-                        throw new BroException("\t" + "Sorry bro, you can't have an empty " + command[0] + ".");
-                    } else {
+                    case EVENT -> {
+                        if (arguments.isEmpty()) {
+                            throw new BroException("\t" + "Sorry bro, you can't have an empty event.");
+                        }
+                        Pattern pattern = Pattern.compile("(?<task>.+?)\\s+/from\\s+(?<start>.+?)\\s+/to\\s+(?<end>.+)");
+                        Matcher matcher = pattern.matcher(arguments);
+
+                        if (matcher.find()) {
+                            Event newEvent = new Event(matcher.group("task"), matcher.group("start"), matcher.group("end"));
+                            tasks.add(newEvent);
+                            System.out.println("\t" + "I gotchu bro, added this task:\n\t  " + newEvent);
+                            printTaskCount(tasks.size());
+                        } else {
+                            throw new BroException("\t" + "I think you messed up the event format bro, write 'event [task] /from [start] /to [end]'");
+                        }
+                    }
+                    case UNKNOWN -> {
                         throw new BroException("\t" + "I don't get what you're trying to say bro, can you try again?");
                     }
                 }
             } catch (BroException e) {
                 System.out.println(e.getMessage());
+            } catch (NumberFormatException e) {
+                System.out.println("\t" + "Bro...please enter a valid task number.");
             } catch (IndexOutOfBoundsException e) {
                 System.out.println("\t" + "Uhh...that item doesn't exist in your list bro.");
             } finally {
                 System.out.println("\t" + line + "\n");
-                input = scanner.nextLine();
             }
         }
 
@@ -145,5 +130,13 @@ public class Bro {
         System.out.println("\t" + line);
         System.out.println("\t" + "See you soon bro.");
         System.out.println("\t" + line);
+    }
+
+    private static void printTaskCount(int size) {
+        if (size > 1 || size == 0) {
+            System.out.println("\t" + "Now you have " + size + " tasks in the list.");
+        } else {
+            System.out.println("\t" + "Now you have " + size + " task in the list.");
+        }
     }
 }
