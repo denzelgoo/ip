@@ -25,14 +25,15 @@ public class Bro {
         while (!input.trim().equalsIgnoreCase("bye")) {
             System.out.println("\t" + line);
 
-            String[] command = input.trim().toLowerCase().split("\\s+");
+            String[] command = input.trim().split(" ", 2);
+            command[0] = command[0].toLowerCase();
             if (command.length == 1 && command[0].equals("list")) {
                 // list the tasks stored
                 System.out.println("\t" + "Here are the tasks you have bro:");
                 for (int i = 0; i < tasks.size(); i++) {
                     System.out.println("\t" + (i + 1) + ". " + tasks.get(i));
                 }
-            } else if (command.length == 2 && (command[0].equals("mark") || command[0].equals("unmark"))) {
+            } else if (command[0].equals("mark") || command[0].equals("unmark")) {
                 // mark or unmark tasks as done
                 int listIndex = Integer.parseInt(command[1]) - 1;
                 Task task = tasks.get(listIndex);
@@ -46,11 +47,24 @@ public class Bro {
                     System.out.println("\t" + "That's tough bro, I've marked this task as not done yet:");
                     System.out.println("\t" + "  " + task);
                 }
-            } else {
+            } else if (command.length > 1) {
                 // general case: add a task to the list
-                Task newTask = new Task(input);
-                tasks.add(newTask);
-                System.out.println("\t" + "added: " + input);
+                if (command[0].equals("todo")) {
+                    Todo newTodo = new Todo(command[1]);
+                    tasks.add(newTodo);
+                    System.out.println("\t" + "I gotchu bro, added this task:\n\t  " + newTodo);
+                    if (tasks.size() > 1) {
+                        System.out.println("\t" + "Now you have " + tasks.size() + " tasks in the list.");
+                    } else {
+                        System.out.println("\t" + "Now you have " + tasks.size() + " task in the list.");
+                    }
+                } else {
+                    // invalid command
+                    System.out.println("\t" + "I don't get what you're trying to say bro, can you try again?");
+                }
+            } else {
+                // the command is just a single word that is not "list" or nothing, invalid command
+                System.out.println("\t" + "I don't get what you're trying to say bro, can you try again?");
             }
 
             System.out.println("\t" + line + "\n");
