@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Bro {
@@ -17,12 +18,22 @@ public class Bro {
         System.out.println("If you need anything, just ask bro.");
         System.out.println(line + "\n");
 
-        // Echo user input
+        // Save user input to a list and display list when asked
+        ArrayList<String> inputs = new ArrayList<>();
         Scanner scanner = new Scanner(System.in);
         String input = scanner.nextLine();
         while (!input.trim().equalsIgnoreCase("bye")) {
             System.out.println("\t" + line);
-            System.out.println("\t" + input);
+            if (!input.trim().equalsIgnoreCase("list")) {
+                // general case: add input to the list
+                inputs.add(input);
+                System.out.println("\t" + "added: " + input);
+            } else {
+                // list the inputs stored
+                for (int i = 0; i < inputs.size(); i++) {
+                    System.out.println("\t" + (i + 1) + ". " + inputs.get(i));
+                }
+            }
             System.out.println("\t" + line + "\n");
             input = scanner.nextLine();
         }
