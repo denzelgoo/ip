@@ -23,9 +23,9 @@ public class Task {
     @Override
     public String toString() {
         if (this.done) {
-            return String.format("[ ] %s", this.task);
-        } else {
             return String.format("[X] %s", this.task);
+        } else {
+            return String.format("[ ] %s", this.task);
         }
     }
 }
