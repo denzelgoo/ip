@@ -51,6 +51,19 @@ public class Bro {
                         System.out.println("\t" + "That's tough bro, I've marked this task as not done yet:");
                         System.out.println("\t" + "  " + task);
                     }
+                } else if (command[0].equals("delete")) {
+                    // delete the task
+                    int listIndex = Integer.parseInt(command[1]) - 1;
+                    Task task = tasks.get(listIndex);
+                    tasks.remove(listIndex);
+                    System.out.println("\t" + "No problem bro, I've removed this task:");
+                    System.out.println("\t" + "  " + task);
+
+                    if (tasks.size() > 1) {
+                        System.out.println("\t" + "Now you have " + tasks.size() + " tasks in the list.");
+                    } else {
+                        System.out.println("\t" + "Now you have " + tasks.size() + " task in the list.");
+                    }
                 } else if (command.length > 1) {
                     // general case: add a task to the list
                     switch (command[0]) {
