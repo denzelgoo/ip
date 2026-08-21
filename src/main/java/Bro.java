@@ -53,6 +53,18 @@ public class Bro {
                     Todo newTodo = new Todo(command[1]);
                     tasks.add(newTodo);
                     System.out.println("\t" + "I gotchu bro, added this task:\n\t  " + newTodo);
+
+                    if (tasks.size() > 1) {
+                        System.out.println("\t" + "Now you have " + tasks.size() + " tasks in the list.");
+                    } else {
+                        System.out.println("\t" + "Now you have " + tasks.size() + " task in the list.");
+                    }
+                } else if (command[0].equals("deadline")) {
+                    String[] details = command[1].split(" /by ", 2);
+                    Deadline newDeadline = new Deadline(details[0], details[1]);
+                    tasks.add(newDeadline);
+                    System.out.println("\t" + "I gotchu bro, added this task:\n\t  " + newDeadline);
+
                     if (tasks.size() > 1) {
                         System.out.println("\t" + "Now you have " + tasks.size() + " tasks in the list.");
                     } else {
