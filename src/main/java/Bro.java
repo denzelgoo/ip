@@ -18,22 +18,41 @@ public class Bro {
         System.out.println("If you need anything, just ask bro.");
         System.out.println(line + "\n");
 
-        // Save user input to a list and display list when asked
-        ArrayList<String> inputs = new ArrayList<>();
+        // Save tasks to a list and display list when asked
+        ArrayList<Task> tasks = new ArrayList<>();
         Scanner scanner = new Scanner(System.in);
         String input = scanner.nextLine();
         while (!input.trim().equalsIgnoreCase("bye")) {
             System.out.println("\t" + line);
-            if (!input.trim().equalsIgnoreCase("list")) {
-                // general case: add input to the list
-                inputs.add(input);
-                System.out.println("\t" + "added: " + input);
-            } else {
-                // list the inputs stored
-                for (int i = 0; i < inputs.size(); i++) {
-                    System.out.println("\t" + (i + 1) + ". " + inputs.get(i));
+
+            String[] command = input.trim().toLowerCase().split("\\s+");
+            if (command.length == 1 && command[0].equals("list")) {
+                // list the tasks stored
+                System.out.println("\t" + "Here are the tasks you have bro:");
+                for (int i = 0; i < tasks.size(); i++) {
+                    System.out.println("\t" + (i + 1) + ". " + tasks.get(i));
                 }
+            } else if (command.length == 2 && (command[0].equals("mark") || command[0].equals("unmark"))) {
+                // mark or unmark tasks as done
+                int listIndex = Integer.parseInt(command[1]) - 1;
+                Task task = tasks.get(listIndex);
+                if (command[0].equals("mark")) {
+                    task.markDone();
+                    System.out.println("\t" + "Nice bro, I've marked this task as done for you:");
+                    System.out.println("\t" + "  " + task);
+                } else {
+                    // unmark command
+                    task.unmarkDone();
+                    System.out.println("\t" + "That's tough bro, I've marked this task as not done yet:");
+                    System.out.println("\t" + "  " + task);
+                }
+            } else {
+                // general case: add a task to the list
+                Task newTask = new Task(input);
+                tasks.add(newTask);
+                System.out.println("\t" + "added: " + input);
             }
+
             System.out.println("\t" + line + "\n");
             input = scanner.nextLine();
         }
