@@ -1,5 +1,7 @@
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Bro {
     public static void main(String[] args) {
@@ -70,12 +72,36 @@ public class Bro {
                     } else {
                         System.out.println("\t" + "Now you have " + tasks.size() + " task in the list.");
                     }
+                } else if (command[0].equals("event")) {
+                    Pattern pattern = Pattern.compile("(?<task>.+?)\\s+/from\\s+(?<start>.+?)\\s+/to\\s+(?<end>.+)");
+                    Matcher matcher = pattern.matcher(command[1]);
+                    String task = "";
+                    String start = "";
+                    String end = "";
+
+                    if (matcher.find()) {
+                        task = matcher.group("task");   // "project meeting"
+                        start = matcher.group("start"); // "Mon 2pm"
+                        end = matcher.group("end");     // "4pm"
+
+                        Event newEvent = new Event(task, start, end);
+                        tasks.add(newEvent);
+                        System.out.println("\t" + "I gotchu bro, added this task:\n\t  " + newEvent);
+
+                        if (tasks.size() > 1) {
+                            System.out.println("\t" + "Now you have " + tasks.size() + " tasks in the list.");
+                        } else {
+                            System.out.println("\t" + "Now you have " + tasks.size() + " task in the list.");
+                        }
+                    } else {
+                        System.out.println("\t" + "I think you messed up the format of the event bro, can you try again?");
+                    }
                 } else {
                     // invalid command
                     System.out.println("\t" + "I don't get what you're trying to say bro, can you try again?");
                 }
             } else {
-                // the command is just a single word that is not "list" or nothing, invalid command
+                // the command is either just a single word that is not "list" or nothing, invalid command
                 System.out.println("\t" + "I don't get what you're trying to say bro, can you try again?");
             }
 
