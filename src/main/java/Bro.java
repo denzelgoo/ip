@@ -67,6 +67,10 @@ public class Bro {
                         }
                         case "deadline" -> {
                             String[] details = command[1].split(" /by ", 2);
+                            if (details.length == 1) {
+                                // there is no /by, wrong format for deadline task
+                                throw new BroException("\t" + "I think you forgot to add the deadline bro, can you try again? Make sure you write 'deadline [task] /by [deadline]'");
+                            }
                             Deadline newDeadline = new Deadline(details[0], details[1]);
                             tasks.add(newDeadline);
                             System.out.println("\t" + "I gotchu bro, added this task:\n\t  " + newDeadline);
@@ -99,7 +103,7 @@ public class Bro {
                                     System.out.println("\t" + "Now you have " + tasks.size() + " task in the list.");
                                 }
                             } else {
-                                System.out.println("\t" + "I think you messed up the format of the event bro, can you try again?");
+                                throw new BroException("\t" + "I think you messed up the format of the event bro, can you try again? Make sure you write 'event [task] /from [start] /to [end]'");
                             }
                         }
                         default ->
