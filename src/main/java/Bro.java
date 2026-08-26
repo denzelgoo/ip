@@ -1,9 +1,31 @@
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Bro {
+    private static void saveTasksToFile(String filePath, ArrayList<Task> tasks) {
+        try {
+            File file = new File(filePath);
+            // Create parent directories if they don't exist
+            if (file.getParentFile() != null) {
+                file.getParentFile().mkdirs();
+            }
+
+            PrintWriter writer = new PrintWriter(new FileWriter(file));
+            for (Task task : tasks) {
+                writer.println(task.toFileFormat());
+            }
+            writer.close();
+        } catch (IOException e) {
+            System.out.println("\t" + "Oops, couldn't save your tasks to file bro: " + e.getMessage());
+        }
+    }
+
     public static void main(String[] args) throws BroException {
         String line = "____________________________________________________________";
 
@@ -37,6 +59,8 @@ public class Bro {
                 Command command = Command.fromString(inputParts[0]);
                 String arguments = inputParts.length > 1 ? inputParts[1].trim() : "";
 
+                String filePath = "./data/bro.txt";
+
                 switch (command) {
                     case LIST -> {
                         // list the tasks stored
@@ -62,6 +86,7 @@ public class Bro {
                             System.out.println("\t" + "That's tough bro, I've marked this task as not done yet:");
                             System.out.println("\t" + "  " + task);
                         }
+                        saveTasksToFile(filePath, tasks);
                     }
                     case DELETE -> {
                         if (arguments.isEmpty()) {
@@ -69,6 +94,7 @@ public class Bro {
                         }
                         int listIndex = Integer.parseInt(arguments) - 1;
                         Task task = tasks.remove(listIndex);
+                        saveTasksToFile(filePath, tasks);
                         System.out.println("\t" + "No problem bro, I've removed this task:");
                         System.out.println("\t" + "  " + task);
                         printTaskCount(tasks.size());
@@ -79,6 +105,7 @@ public class Bro {
                         }
                         Todo newTodo = new Todo(arguments);
                         tasks.add(newTodo);
+                        saveTasksToFile(filePath, tasks);
                         System.out.println("\t" + "I gotchu bro, added this task:\n\t  " + newTodo);
                         printTaskCount(tasks.size());
                     }
@@ -88,10 +115,12 @@ public class Bro {
                         }
                         String[] details = arguments.split(" /by ", 2);
                         if (details.length == 1 || details[0].isBlank() || details[1].isBlank()) {
-                            throw new BroException("\t" + "I think you forgot to add the deadline bro, write 'deadline [task] /by [deadline]'");
+                            throw new BroException("\t"
+                                    + "I think you forgot to add the deadline bro, write 'deadline [task] /by [deadline]'");
                         }
                         Deadline newDeadline = new Deadline(details[0], details[1]);
                         tasks.add(newDeadline);
+                        saveTasksToFile(filePath, tasks);
                         System.out.println("\t" + "I gotchu bro, added this task:\n\t  " + newDeadline);
                         printTaskCount(tasks.size());
                     }
@@ -99,16 +128,20 @@ public class Bro {
                         if (arguments.isEmpty()) {
                             throw new BroException("\t" + "Sorry bro, you can't have an empty event.");
                         }
-                        Pattern pattern = Pattern.compile("(?<task>.+?)\\s+/from\\s+(?<start>.+?)\\s+/to\\s+(?<end>.+)");
+                        Pattern pattern = Pattern
+                                .compile("(?<task>.+?)\\s+/from\\s+(?<start>.+?)\\s+/to\\s+(?<end>.+)");
                         Matcher matcher = pattern.matcher(arguments);
 
                         if (matcher.find()) {
-                            Event newEvent = new Event(matcher.group("task"), matcher.group("start"), matcher.group("end"));
+                            Event newEvent = new Event(matcher.group("task"), matcher.group("start"),
+                                    matcher.group("end"));
                             tasks.add(newEvent);
+                            saveTasksToFile(filePath, tasks);
                             System.out.println("\t" + "I gotchu bro, added this task:\n\t  " + newEvent);
                             printTaskCount(tasks.size());
                         } else {
-                            throw new BroException("\t" + "I think you messed up the event format bro, write 'event [task] /from [start] /to [end]'");
+                            throw new BroException("\t"
+                                    + "I think you messed up the event format bro, write 'event [task] /from [start] /to [end]'");
                         }
                     }
                     case UNKNOWN -> {

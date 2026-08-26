@@ -12,4 +12,9 @@ public class Event extends Task {
     public String toString() {
         return String.format("[E]%s (from: %s to: %s)", super.toString(), this.start, this.end);
     }
+
+    @Override
+    public String toFileFormat() {
+        return "E | " + (this.isDone ? "1" : "0") + " | " + this.task + " | " + this.start + "-" + this.end;
+    }
 }

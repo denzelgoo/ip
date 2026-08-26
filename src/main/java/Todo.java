@@ -3,7 +3,13 @@ public class Todo extends Task {
         super(task);
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
         return "[T]" + super.toString();
+    }
+
+    @Override
+    public String toFileFormat() {
+        return "T | " + (this.isDone ? "1" : "0") + " | " + this.task;
     }
 }
