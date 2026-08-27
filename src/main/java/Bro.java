@@ -4,24 +4,38 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Locale;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Main application class for the Bro chatbot.
+ * Coordinates user interaction, task storage, and command execution.
+ */
 public class Bro {
     private static final Path DATA_FILE_PATH = Path.of("data", "bro.txt");
+
+    private final UserInterface ui;
+    private final ArrayList<Task> tasks;
+
+    /**
+     * Constructs a Bro chatbot instance with its UserInterface and loaded tasks.
+     */
+    public Bro() {
+        this.ui = new UserInterface();
+        this.tasks = loadTasksFromFile(DATA_FILE_PATH, this.ui);
+    }
 
     /**
      * Loads saved tasks from a file into an ArrayList of Task objects.
      * Handles missing files gracefully by returning an empty list, and safely skips malformed lines.
      *
      * @param filePath The relative path to the data file.
+     * @param ui       The UserInterface instance for reporting errors.
      * @return An ArrayList containing the loaded Task objects, or an empty list if the file does not exist.
      */
-    private static ArrayList<Task> loadTasksFromFile(Path filePath) {
+    private static ArrayList<Task> loadTasksFromFile(Path filePath, UserInterface ui) {
         ArrayList<Task> tasks = new ArrayList<>();
         File file = filePath.toFile();
         if (!file.exists()) {
@@ -79,7 +93,7 @@ public class Bro {
                 }
             }
         } catch (IOException e) {
-            System.out.println("\t" + "Oops, couldn't load tasks from file bro: " + e.getMessage());
+            ui.showLoadingError(e.getMessage());
         }
 
         return tasks;
@@ -91,8 +105,9 @@ public class Bro {
      *
      * @param filePath The relative path to the data file.
      * @param tasks    The list of tasks to be saved.
+     * @param ui       The UserInterface instance for reporting errors.
      */
-    private static void saveTasksToFile(Path filePath, ArrayList<Task> tasks) {
+    private static void saveTasksToFile(Path filePath, ArrayList<Task> tasks, UserInterface ui) {
         try {
             File file = filePath.toFile();
             // Create parent directories if they don't exist
@@ -106,33 +121,20 @@ public class Bro {
                 }
             }
         } catch (IOException e) {
-            System.out.println("\t" + "Oops, couldn't save your tasks to file bro: " + e.getMessage());
+            ui.showSavingError(e.getMessage());
         }
     }
 
-    public static void main(String[] args) throws BroException {
-        String line = "____________________________________________________________";
+    /**
+     * Starts the main chatbot loop, reading and handling user commands.
+     */
+    public void run() {
+        ui.showWelcome();
 
-        String banner = "    ____   ____  ____ \n"
-                + "   / __ ) / __ \\/ __ \\\n"
-                + "  / __  |/ /_/ / / / /\n"
-                + " / /_/ // _, _/ /_/ / \n"
-                + "/_____//_/ |_|\\____/  \n";
-        System.out.println(line);
-        System.out.println(banner);
-
-        // Greet the user and wait for user input
-        System.out.println("What's up bro, I'm Bro.");
-        System.out.println("If you need anything, just ask bro.");
-        System.out.println(line + "\n");
-
-        // Load existing tasks from file if available
-        ArrayList<Task> tasks = loadTasksFromFile(DATA_FILE_PATH);
-        Scanner scanner = new Scanner(System.in);
         boolean isRunning = true;
         while (isRunning) {
-            String input = scanner.nextLine();
-            System.out.println("\t" + line);
+            String input = ui.readCommand();
+            ui.showLine();
 
             try {
                 String[] inputParts = input.trim().split(" ", 2);
@@ -142,17 +144,12 @@ public class Bro {
                 switch (command) {
                     case BYE -> {
                         isRunning = false;
-                        System.out.println("\t" + "See you soon bro.");
+                        ui.showGoodbye();
                     }
                     case LIST -> {
-                        // list the tasks stored
-                        System.out.println("\t" + "Here are the tasks you have bro:");
-                        for (int i = 0; i < tasks.size(); i++) {
-                            System.out.println("\t" + (i + 1) + ". " + tasks.get(i));
-                        }
+                        ui.showTaskList(tasks);
                     }
                     case TASKS -> {
-                        // list tasks occurring on a specific date (including incomplete todos)
                         LocalDate targetDate = TaskDateTime.parseQueryDate(arguments);
                         ArrayList<Task> matchingTasks = new ArrayList<>();
                         for (Task task : tasks) {
@@ -160,61 +157,44 @@ public class Bro {
                                 matchingTasks.add(task);
                             }
                         }
-
-                        if (matchingTasks.isEmpty()) {
-                            System.out.println("\t" + "You don't have any tasks for "
-                                    + targetDate.format(DateTimeFormatter.ofPattern("MMM dd yyyy", Locale.ENGLISH)) + " bro!");
-                        } else {
-                            System.out.println("\t" + "Here are the tasks happening on "
-                                    + targetDate.format(DateTimeFormatter.ofPattern("MMM dd yyyy", Locale.ENGLISH)) + " bro:");
-                            for (int i = 0; i < matchingTasks.size(); i++) {
-                                System.out.println("\t" + (i + 1) + ". " + matchingTasks.get(i));
-                            }
-                        }
+                        ui.showTasksForDate(targetDate, matchingTasks);
                     }
                     case MARK, UNMARK -> {
-                        // mark or unmark tasks as done
                         if (arguments.isEmpty()) {
-                            throw new BroException("\t" + "Yo which task do you want to mark/unmark bro?");
+                            throw new BroException("\tYo which task do you want to mark/unmark bro?");
                         }
                         int listIndex = Integer.parseInt(arguments) - 1;
                         Task task = tasks.get(listIndex);
                         if (command == Command.MARK) {
                             task.markDone();
-                            System.out.println("\t" + "Nice bro, I've marked this task as done for you:");
-                            System.out.println("\t" + "  " + task);
+                            ui.showTaskMarked(task);
                         } else {
-                            // unmark command
                             task.unmarkDone();
-                            System.out.println("\t" + "That's tough bro, I've marked this task as not done yet:");
-                            System.out.println("\t" + "  " + task);
+                            ui.showTaskUnmarked(task);
                         }
-                        saveTasksToFile(DATA_FILE_PATH, tasks);
+                        saveTasksToFile(DATA_FILE_PATH, tasks, ui);
                     }
                     case DELETE -> {
                         if (arguments.isEmpty()) {
-                            throw new BroException("\t" + "Which task do you want to delete bro?");
+                            throw new BroException("\tWhich task do you want to delete bro?");
                         }
                         int listIndex = Integer.parseInt(arguments) - 1;
                         Task task = tasks.remove(listIndex);
-                        saveTasksToFile(DATA_FILE_PATH, tasks);
-                        System.out.println("\t" + "No problem bro, I've removed this task:");
-                        System.out.println("\t" + "  " + task);
-                        printTaskCount(tasks.size());
+                        saveTasksToFile(DATA_FILE_PATH, tasks, ui);
+                        ui.showTaskDeleted(task, tasks.size());
                     }
                     case TODO -> {
                         if (arguments.isEmpty()) {
-                            throw new BroException("\t" + "Sorry bro, you can't have an empty todo.");
+                            throw new BroException("\tSorry bro, you can't have an empty todo.");
                         }
                         Todo newTodo = new Todo(arguments);
                         tasks.add(newTodo);
-                        saveTasksToFile(DATA_FILE_PATH, tasks);
-                        System.out.println("\t" + "I gotchu bro, added this task:\n\t  " + newTodo);
-                        printTaskCount(tasks.size());
+                        saveTasksToFile(DATA_FILE_PATH, tasks, ui);
+                        ui.showTaskAdded(newTodo, tasks.size());
                     }
                     case DEADLINE -> {
                         if (arguments.isEmpty()) {
-                            throw new BroException("\t" + "Sorry bro, you can't have an empty deadline.");
+                            throw new BroException("\tSorry bro, you can't have an empty deadline.");
                         }
                         String[] details = arguments.split(" /by ", 2);
                         if (details.length == 1 || details[0].isBlank() || details[1].isBlank()) {
@@ -223,13 +203,12 @@ public class Bro {
                         }
                         Deadline newDeadline = new Deadline(details[0].trim(), details[1].trim());
                         tasks.add(newDeadline);
-                        saveTasksToFile(DATA_FILE_PATH, tasks);
-                        System.out.println("\t" + "I gotchu bro, added this task:\n\t  " + newDeadline);
-                        printTaskCount(tasks.size());
+                        saveTasksToFile(DATA_FILE_PATH, tasks, ui);
+                        ui.showTaskAdded(newDeadline, tasks.size());
                     }
                     case EVENT -> {
                         if (arguments.isEmpty()) {
-                            throw new BroException("\t" + "Sorry bro, you can't have an empty event.");
+                            throw new BroException("\tSorry bro, you can't have an empty event.");
                         }
                         Pattern pattern = Pattern
                                 .compile("(?<task>.+?)\\s+/from\\s+(?<start>.+?)\\s+/to\\s+(?<end>.+)");
@@ -239,37 +218,32 @@ public class Bro {
                             Event newEvent = new Event(matcher.group("task").trim(), matcher.group("start").trim(),
                                     matcher.group("end").trim());
                             tasks.add(newEvent);
-                            saveTasksToFile(DATA_FILE_PATH, tasks);
-                            System.out.println("\t" + "I gotchu bro, added this task:\n\t  " + newEvent);
-                            printTaskCount(tasks.size());
+                            saveTasksToFile(DATA_FILE_PATH, tasks, ui);
+                            ui.showTaskAdded(newEvent, tasks.size());
                         } else {
                             throw new BroException("\t"
                                     + "I think you messed up the event format bro, write 'event [task] /from [start] /to [end]'");
                         }
                     }
                     case UNKNOWN -> {
-                        throw new BroException("\t" + "I don't get what you're trying to say bro, can you try again?");
+                        throw new BroException("\tI don't get what you're trying to say bro, can you try again?");
                     }
                 }
             } catch (BroException e) {
-                System.out.println(e.getMessage());
+                ui.showError(e.getMessage());
             } catch (NumberFormatException e) {
-                System.out.println("\t" + "Bro...please enter a valid task number.");
+                ui.showInvalidTaskNumberError();
             } catch (IndexOutOfBoundsException e) {
-                System.out.println("\t" + "Uhh...that item doesn't exist in your list bro.");
+                ui.showNoSuchTaskError();
             } finally {
-                System.out.println("\t" + line + "\n");
+                ui.showDividerWithSpacing();
             }
         }
 
-        scanner.close();
+        ui.close();
     }
 
-    private static void printTaskCount(int size) {
-        if (size > 1 || size == 0) {
-            System.out.println("\t" + "Now you have " + size + " tasks in the list.");
-        } else {
-            System.out.println("\t" + "Now you have " + size + " task in the list.");
-        }
+    public static void main(String[] args) {
+        new Bro().run();
     }
 }
