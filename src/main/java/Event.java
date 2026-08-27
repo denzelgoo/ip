@@ -1,3 +1,5 @@
+import java.time.LocalDate;
+
 /**
  * Represents an event task spanning a specific start and end time.
  * Start and end timestamps are parsed and stored as TaskDateTime objects.
@@ -18,6 +20,45 @@ public class Event extends Task {
         super(task);
         this.start = TaskDateTime.parse(startStr);
         this.end = TaskDateTime.parse(endStr);
+    }
+
+    /**
+     * Checks if this event occurs on or spans across the specified date.
+     *
+     * @param date The LocalDate to check against.
+     * @return True if the event spans across or includes the specified date, false otherwise.
+     */
+    @Override
+    public boolean isOnDate(LocalDate date) {
+        LocalDate startDate = this.start.toLocalDate();
+        LocalDate endDate = this.end.toLocalDate();
+
+        if (startDate != null && endDate != null) {
+            return !date.isBefore(startDate) && !date.isAfter(endDate);
+        } else if (startDate != null) {
+            return startDate.isEqual(date);
+        } else if (endDate != null) {
+            return endDate.isEqual(date);
+        }
+        return false;
+    }
+
+    /**
+     * Gets the TaskDateTime start object.
+     *
+     * @return The TaskDateTime instance for start.
+     */
+    public TaskDateTime getStart() {
+        return this.start;
+    }
+
+    /**
+     * Gets the TaskDateTime end object.
+     *
+     * @return The TaskDateTime instance for end.
+     */
+    public TaskDateTime getEnd() {
+        return this.end;
     }
 
     /**

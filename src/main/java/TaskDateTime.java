@@ -175,6 +175,64 @@ public class TaskDateTime {
     }
 
     /**
+     * Checks if this date/time object represents a date that matches the target date.
+     *
+     * @param targetDate The LocalDate to check against.
+     * @return True if this object has a parsed date and its date component equals targetDate, false otherwise.
+     */
+    public boolean isOnDate(LocalDate targetDate) {
+        if (dateTime != null && targetDate != null) {
+            return dateTime.toLocalDate().isEqual(targetDate);
+        }
+        return false;
+    }
+
+    /**
+     * Returns the LocalDate representation if this object is a parsed date/time, or null otherwise.
+     *
+     * @return The LocalDate instance, or null.
+     */
+    public LocalDate toLocalDate() {
+        return (dateTime != null) ? dateTime.toLocalDate() : null;
+    }
+
+    /**
+     * Parses a query date string into a LocalDate.
+     *
+     * @param input The input date string to search for (e.g., "27/8/2026" or "2026-08-27").
+     * @return The parsed LocalDate.
+     * @throws BroException If the input string cannot be parsed into a date.
+     */
+    public static LocalDate parseQueryDate(String input) throws BroException {
+        if (input == null || input.trim().isEmpty()) {
+            throw new BroException("\tBro, please tell me which date you want to check (e.g. tasks 27/8/2026).");
+        }
+
+        String trimmed = input.trim();
+
+        // Try date-only formatters
+        for (DateTimeFormatter formatter : DATE_FORMATTERS) {
+            try {
+                return LocalDate.parse(trimmed, formatter);
+            } catch (DateTimeParseException ignored) {
+                // Try next formatter
+            }
+        }
+
+        // Try date-time formatters as well in case time was supplied
+        for (DateTimeFormatter formatter : DATE_TIME_FORMATTERS) {
+            try {
+                return LocalDateTime.parse(trimmed, formatter).toLocalDate();
+            } catch (DateTimeParseException ignored) {
+                // Try next formatter
+            }
+        }
+
+        throw new BroException("\tBro, please use a valid date format like 'd/M/yyyy' (e.g. 27/8/2026) "
+                + "or 'yyyy-MM-dd' (e.g. 2026-08-27)!");
+    }
+
+    /**
      * Gets the raw string input.
      *
      * @return The raw string representation.

@@ -3,7 +3,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -146,6 +149,27 @@ public class Bro {
                         System.out.println("\t" + "Here are the tasks you have bro:");
                         for (int i = 0; i < tasks.size(); i++) {
                             System.out.println("\t" + (i + 1) + ". " + tasks.get(i));
+                        }
+                    }
+                    case TASKS -> {
+                        // list tasks occurring on a specific date (including incomplete todos)
+                        LocalDate targetDate = TaskDateTime.parseQueryDate(arguments);
+                        ArrayList<Task> matchingTasks = new ArrayList<>();
+                        for (Task task : tasks) {
+                            if (task.isOnDate(targetDate)) {
+                                matchingTasks.add(task);
+                            }
+                        }
+
+                        if (matchingTasks.isEmpty()) {
+                            System.out.println("\t" + "You don't have any tasks for "
+                                    + targetDate.format(DateTimeFormatter.ofPattern("MMM dd yyyy", Locale.ENGLISH)) + " bro!");
+                        } else {
+                            System.out.println("\t" + "Here are the tasks happening on "
+                                    + targetDate.format(DateTimeFormatter.ofPattern("MMM dd yyyy", Locale.ENGLISH)) + " bro:");
+                            for (int i = 0; i < matchingTasks.size(); i++) {
+                                System.out.println("\t" + (i + 1) + ". " + matchingTasks.get(i));
+                            }
                         }
                     }
                     case MARK, UNMARK -> {

@@ -1,3 +1,5 @@
+import java.time.LocalDate;
+
 /**
  * Represents a task with a deadline.
  * The deadline date and time is parsed and stored as a TaskDateTime object.
@@ -15,6 +17,26 @@ public class Deadline extends Task {
     public Deadline(String task, String deadlineStr) throws BroException {
         super(task);
         this.deadline = TaskDateTime.parse(deadlineStr);
+    }
+
+    /**
+     * Checks if this deadline task falls on the specified date.
+     *
+     * @param date The LocalDate to check against.
+     * @return True if the deadline date matches the specified date, false otherwise.
+     */
+    @Override
+    public boolean isOnDate(LocalDate date) {
+        return this.deadline.isOnDate(date);
+    }
+
+    /**
+     * Gets the TaskDateTime deadline object.
+     *
+     * @return The TaskDateTime instance.
+     */
+    public TaskDateTime getDeadline() {
+        return this.deadline;
     }
 
     /**

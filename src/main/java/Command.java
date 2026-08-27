@@ -1,5 +1,6 @@
 public enum Command {
     LIST,
+    TASKS,
     MARK,
     UNMARK,
     DELETE,
