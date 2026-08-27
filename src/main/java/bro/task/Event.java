@@ -1,4 +1,8 @@
+package bro.task;
+
 import java.time.LocalDate;
+
+import bro.exception.BroException;
 
 /**
  * Represents an event task spanning a specific start and end time.
@@ -26,7 +30,8 @@ public class Event extends Task {
      * Checks if this event occurs on or spans across the specified date.
      *
      * @param date The LocalDate to check against.
-     * @return True if the event spans across or includes the specified date, false otherwise.
+     * @return True if the event spans across or includes the specified date, false
+     *         otherwise.
      */
     @Override
     public boolean isOnDate(LocalDate date) {
@@ -64,7 +69,8 @@ public class Event extends Task {
     /**
      * Returns a string representation of the Event task for display.
      *
-     * @return Formatted string including task type, status icon, description, and formatted start/end dates.
+     * @return Formatted string including task type, status icon, description, and
+     *         formatted start/end dates.
      */
     @Override
     public String toString() {

@@ -1,4 +1,8 @@
+package bro.task;
+
 import java.time.LocalDate;
+
+import bro.exception.BroException;
 
 /**
  * Represents a task with a deadline.
@@ -23,7 +27,8 @@ public class Deadline extends Task {
      * Checks if this deadline task falls on the specified date.
      *
      * @param date The LocalDate to check against.
-     * @return True if the deadline date matches the specified date, false otherwise.
+     * @return True if the deadline date matches the specified date, false
+     *         otherwise.
      */
     @Override
     public boolean isOnDate(LocalDate date) {
@@ -42,7 +47,8 @@ public class Deadline extends Task {
     /**
      * Returns a string representation of the Deadline task for display.
      *
-     * @return Formatted string including task type, status icon, description, and formatted deadline date/time.
+     * @return Formatted string including task type, status icon, description, and
+     *         formatted deadline date/time.
      */
     @Override
     public String toString() {
@@ -50,7 +56,8 @@ public class Deadline extends Task {
     }
 
     /**
-     * Returns a string representation of the Deadline task formatted for file storage.
+     * Returns a string representation of the Deadline task formatted for file
+     * storage.
      *
      * @return Formatted storage string with pipe delimiters.
      */

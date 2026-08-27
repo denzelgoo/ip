@@ -1,8 +1,13 @@
+package bro.ui;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Scanner;
+
+import bro.task.Task;
+import bro.task.TaskList;
 
 /**
  * Handles all user interactions and console input/output for the Bro chatbot.

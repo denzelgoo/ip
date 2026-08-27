@@ -1,3 +1,5 @@
+package bro.task;
+
 import java.time.LocalDate;
 
 /**
@@ -11,7 +13,8 @@ public class Todo extends Task {
 
     /**
      * Checks if this todo should be listed for a specific date.
-     * Uncompleted todos are always listed because they remain active until finished.
+     * Uncompleted todos are always listed because they remain active until
+     * finished.
      *
      * @param date The LocalDate to check against.
      * @return True if the todo is not completed, false if completed.

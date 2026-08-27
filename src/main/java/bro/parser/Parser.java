@@ -1,13 +1,19 @@
+package bro.parser;
+
 import java.time.LocalDate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import bro.command.Command;
+import bro.exception.BroException;
+import bro.task.TaskDateTime;
 
 /**
  * Handles parsing and interpreting raw user commands and arguments.
  */
 public class Parser {
-    private static final Pattern EVENT_PATTERN =
-            Pattern.compile("(?<task>.+?)\\s+/from\\s+(?<start>.+?)\\s+/to\\s+(?<end>.+)");
+    private static final Pattern EVENT_PATTERN = Pattern
+            .compile("(?<task>.+?)\\s+/from\\s+(?<start>.+?)\\s+/to\\s+(?<end>.+)");
 
     /**
      * Parses the raw input string to determine the Command type.
@@ -27,7 +33,8 @@ public class Parser {
      * Parses the raw input string to extract the arguments string.
      *
      * @param fullCommand The raw input line entered by the user.
-     * @return The argument string, or an empty string if no arguments were provided.
+     * @return The argument string, or an empty string if no arguments were
+     *         provided.
      */
     public static String parseArguments(String fullCommand) {
         if (fullCommand == null || fullCommand.trim().isEmpty()) {
@@ -43,7 +50,7 @@ public class Parser {
      * @param arguments    The argument string containing the task index.
      * @param emptyMessage The error message thrown if arguments is empty.
      * @return The 0-based integer index.
-     * @throws BroException If arguments is empty.
+     * @throws BroException          If arguments is empty.
      * @throws NumberFormatException If arguments cannot be parsed as an integer.
      */
     public static int parseTaskIndex(String arguments, String emptyMessage) throws BroException {
@@ -87,11 +94,13 @@ public class Parser {
     }
 
     /**
-     * Parses arguments for an event task into description, start date/time, and end date/time.
+     * Parses arguments for an event task into description, start date/time, and end
+     * date/time.
      *
      * @param arguments The raw arguments string.
      * @return A 3-element array containing [description, startStr, endStr].
-     * @throws BroException If arguments is empty or the format does not match the event pattern.
+     * @throws BroException If arguments is empty or the format does not match the
+     *                      event pattern.
      */
     public static String[] parseEventArguments(String arguments) throws BroException {
         if (arguments == null || arguments.trim().isEmpty()) {

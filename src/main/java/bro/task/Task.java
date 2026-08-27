@@ -1,3 +1,5 @@
+package bro.task;
+
 import java.time.LocalDate;
 
 /**
@@ -31,7 +33,8 @@ public abstract class Task {
 
     /**
      * Checks whether this task occurs on or involves the given date.
-     * Default implementation returns false. Subclasses should override where appropriate.
+     * Default implementation returns false. Subclasses should override where
+     * appropriate.
      *
      * @param date The LocalDate to check against.
      * @return True if the task involves the given date, false otherwise.

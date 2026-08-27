@@ -1,6 +1,19 @@
+package bro;
+
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.ArrayList;
+
+import bro.command.Command;
+import bro.exception.BroException;
+import bro.parser.Parser;
+import bro.storage.Storage;
+import bro.task.Deadline;
+import bro.task.Event;
+import bro.task.Task;
+import bro.task.TaskList;
+import bro.task.Todo;
+import bro.ui.UserInterface;
 
 /**
  * Main application class for the Bro chatbot.
@@ -14,7 +27,8 @@ public class Bro {
     private final TaskList tasks;
 
     /**
-     * Constructs a Bro chatbot instance with its Storage, UserInterface, and TaskList.
+     * Constructs a Bro chatbot instance with its Storage, UserInterface, and
+     * TaskList.
      */
     public Bro() {
         this.ui = new UserInterface();
