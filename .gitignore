@@ -21,3 +21,7 @@ text-ui-test/EXPECTED-UNIX.TXT
 
 # .class files
 *.class
+
+# Task storage
+data/
+bro.txt
