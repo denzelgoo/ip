@@ -25,3 +25,9 @@ text-ui-test/EXPECTED-UNIX.TXT
 # Task storage
 data/
 bro.txt
+
+# IDE files
+/.idea/
+/.vscode/
+/out/
+/*.iml
