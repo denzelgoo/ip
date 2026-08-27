@@ -1,3 +1,5 @@
+package bro;
+
 public enum Command {
     LIST,
     TASKS,

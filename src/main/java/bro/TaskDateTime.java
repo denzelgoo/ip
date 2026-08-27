@@ -1,3 +1,5 @@
+package bro;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -6,7 +8,8 @@ import java.util.Locale;
 
 /**
  * Encapsulates date and time handling for tasks.
- * Supports parsing recognized date and date-time formats into java.time objects,
+ * Supports parsing recognized date and date-time formats into java.time
+ * objects,
  * while gracefully falling back to storing unparseable inputs as raw strings.
  */
 public class TaskDateTime {
@@ -27,15 +30,12 @@ public class TaskDateTime {
             DateTimeFormatter.ofPattern("yyyy/M/d")
     };
 
-    private static final DateTimeFormatter DISPLAY_DATE_TIME =
-            DateTimeFormatter.ofPattern("MMM dd yyyy, h:mma", Locale.ENGLISH);
-    private static final DateTimeFormatter DISPLAY_DATE =
-            DateTimeFormatter.ofPattern("MMM dd yyyy", Locale.ENGLISH);
+    private static final DateTimeFormatter DISPLAY_DATE_TIME = DateTimeFormatter.ofPattern("MMM dd yyyy, h:mma",
+            Locale.ENGLISH);
+    private static final DateTimeFormatter DISPLAY_DATE = DateTimeFormatter.ofPattern("MMM dd yyyy", Locale.ENGLISH);
 
-    private static final DateTimeFormatter FILE_DATE_TIME =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
-    private static final DateTimeFormatter FILE_DATE =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static final DateTimeFormatter FILE_DATE_TIME = DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm");
+    private static final DateTimeFormatter FILE_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     private final LocalDateTime dateTime;
     private final boolean hasTime;
@@ -76,7 +76,8 @@ public class TaskDateTime {
     /**
      * Parses a date or date-time string into a TaskDateTime object.
      * If the input matches a recognized format, it is parsed into a LocalDateTime.
-     * Otherwise, it is preserved as a raw string so non-standard inputs (e.g., "2pm", "Sunday") continue to work.
+     * Otherwise, it is preserved as a raw string so non-standard inputs (e.g.,
+     * "2pm", "Sunday") continue to work.
      *
      * @param input The raw input string containing date or date-time information.
      * @return A parsed TaskDateTime instance.
@@ -115,7 +116,8 @@ public class TaskDateTime {
 
     /**
      * Returns a user-friendly string representation of the date/time.
-     * If parsed as a date/time object, returns formatted string (e.g., "Oct 15 2019" or "Dec 02 2019, 6:00PM").
+     * If parsed as a date/time object, returns formatted string (e.g., "Oct 15
+     * 2019" or "Dec 02 2019, 6:00PM").
      * Otherwise, returns the raw input string (e.g., "2pm").
      *
      * @return Formatted date display string or raw string.
@@ -131,8 +133,10 @@ public class TaskDateTime {
     }
 
     /**
-     * Returns a standardized string representation of the date/time suitable for file storage.
-     * If parsed as a date/time object, returns standard format (e.g., "2019-10-15" or "2019-12-02 1800").
+     * Returns a standardized string representation of the date/time suitable for
+     * file storage.
+     * If parsed as a date/time object, returns standard format (e.g., "2019-10-15"
+     * or "2019-12-02 1800").
      * Otherwise, returns the raw input string (e.g., "2pm").
      *
      * @return Formatted storage string or raw string.
@@ -148,7 +152,8 @@ public class TaskDateTime {
     }
 
     /**
-     * Gets the underlying LocalDateTime if parsed, or null if stored as a raw string.
+     * Gets the underlying LocalDateTime if parsed, or null if stored as a raw
+     * string.
      *
      * @return The LocalDateTime instance, or null.
      */
@@ -166,7 +171,8 @@ public class TaskDateTime {
     }
 
     /**
-     * Returns whether the date/time was successfully parsed into a java.time object.
+     * Returns whether the date/time was successfully parsed into a java.time
+     * object.
      *
      * @return True if parsed as java.time object, false if stored as raw string.
      */
@@ -175,10 +181,12 @@ public class TaskDateTime {
     }
 
     /**
-     * Checks if this date/time object represents a date that matches the target date.
+     * Checks if this date/time object represents a date that matches the target
+     * date.
      *
      * @param targetDate The LocalDate to check against.
-     * @return True if this object has a parsed date and its date component equals targetDate, false otherwise.
+     * @return True if this object has a parsed date and its date component equals
+     *         targetDate, false otherwise.
      */
     public boolean isOnDate(LocalDate targetDate) {
         if (dateTime != null && targetDate != null) {
@@ -188,7 +196,8 @@ public class TaskDateTime {
     }
 
     /**
-     * Returns the LocalDate representation if this object is a parsed date/time, or null otherwise.
+     * Returns the LocalDate representation if this object is a parsed date/time, or
+     * null otherwise.
      *
      * @return The LocalDate instance, or null.
      */
@@ -199,7 +208,8 @@ public class TaskDateTime {
     /**
      * Parses a query date string into a LocalDate.
      *
-     * @param input The input date string to search for (e.g., "27/8/2026" or "2026-08-27").
+     * @param input The input date string to search for (e.g., "27/8/2026" or
+     *              "2026-08-27").
      * @return The parsed LocalDate.
      * @throws BroException If the input string cannot be parsed into a date.
      */

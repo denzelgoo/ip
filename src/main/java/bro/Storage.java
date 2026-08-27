@@ -1,3 +1,5 @@
+package bro;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -32,7 +34,8 @@ public class Storage {
 
     /**
      * Loads saved tasks from the data file into a TaskList.
-     * Returns an empty TaskList if the file does not exist, and safely skips corrupted lines.
+     * Returns an empty TaskList if the file does not exist, and safely skips
+     * corrupted lines.
      *
      * @param ui The UserInterface instance for reporting loading errors, or null.
      * @return A TaskList containing the loaded Task objects.
@@ -104,7 +107,8 @@ public class Storage {
     }
 
     /**
-     * Loads saved tasks from the data file without an explicit UserInterface reference.
+     * Loads saved tasks from the data file without an explicit UserInterface
+     * reference.
      *
      * @return A TaskList containing the loaded Task objects.
      */
@@ -117,7 +121,8 @@ public class Storage {
      * Creates parent directories if they do not already exist.
      *
      * @param taskList The TaskList to save.
-     * @param ui       The UserInterface instance for reporting save errors, or null.
+     * @param ui       The UserInterface instance for reporting save errors, or
+     *                 null.
      */
     public void save(TaskList taskList, UserInterface ui) {
         save(taskList.getAllTasks(), ui);
@@ -151,7 +156,8 @@ public class Storage {
     }
 
     /**
-     * Saves the TaskList to the storage file without an explicit UserInterface reference.
+     * Saves the TaskList to the storage file without an explicit UserInterface
+     * reference.
      *
      * @param taskList The TaskList to save.
      */

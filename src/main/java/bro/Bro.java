@@ -1,3 +1,5 @@
+package bro;
+
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -14,7 +16,8 @@ public class Bro {
     private final TaskList tasks;
 
     /**
-     * Constructs a Bro chatbot instance with its Storage, UserInterface, and TaskList.
+     * Constructs a Bro chatbot instance with its Storage, UserInterface, and
+     * TaskList.
      */
     public Bro() {
         this.ui = new UserInterface();
