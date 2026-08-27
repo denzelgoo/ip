@@ -11,10 +11,10 @@ public class Bro {
 
     private final Storage storage;
     private final UserInterface ui;
-    private final ArrayList<Task> tasks;
+    private final TaskList tasks;
 
     /**
-     * Constructs a Bro chatbot instance with its Storage, UserInterface, and loaded tasks.
+     * Constructs a Bro chatbot instance with its Storage, UserInterface, and TaskList.
      */
     public Bro() {
         this.ui = new UserInterface();
@@ -47,12 +47,7 @@ public class Bro {
                     }
                     case TASKS -> {
                         LocalDate targetDate = Parser.parseQueryDate(arguments);
-                        ArrayList<Task> matchingTasks = new ArrayList<>();
-                        for (Task task : tasks) {
-                            if (task.isOnDate(targetDate)) {
-                                matchingTasks.add(task);
-                            }
-                        }
+                        ArrayList<Task> matchingTasks = tasks.findTasksOnDate(targetDate);
                         ui.showTasksForDate(targetDate, matchingTasks);
                     }
                     case MARK, UNMARK -> {
@@ -71,7 +66,7 @@ public class Bro {
                     case DELETE -> {
                         int listIndex = Parser.parseTaskIndex(arguments,
                                 "\tWhich task do you want to delete bro?");
-                        Task task = tasks.remove(listIndex);
+                        Task task = tasks.delete(listIndex);
                         storage.save(tasks, ui);
                         ui.showTaskDeleted(task, tasks.size());
                     }

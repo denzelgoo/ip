@@ -66,7 +66,19 @@ public class UserInterface {
     }
 
     /**
-     * Displays all tasks currently stored in the list.
+     * Displays all tasks currently stored in the TaskList.
+     *
+     * @param tasks The TaskList to display.
+     */
+    public void showTaskList(TaskList tasks) {
+        System.out.println("\tHere are the tasks you have bro:");
+        for (int i = 0; i < tasks.size(); i++) {
+            System.out.println("\t" + (i + 1) + ". " + tasks.get(i));
+        }
+    }
+
+    /**
+     * Displays all tasks currently stored in an ArrayList.
      *
      * @param tasks The list of tasks to display.
      */

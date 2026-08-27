@@ -31,17 +31,17 @@ public class Storage {
     }
 
     /**
-     * Loads saved tasks from the data file into an ArrayList of Task objects.
-     * Returns an empty list if the file does not exist, and safely skips corrupted lines.
+     * Loads saved tasks from the data file into a TaskList.
+     * Returns an empty TaskList if the file does not exist, and safely skips corrupted lines.
      *
      * @param ui The UserInterface instance for reporting loading errors, or null.
-     * @return An ArrayList containing the loaded Task objects.
+     * @return A TaskList containing the loaded Task objects.
      */
-    public ArrayList<Task> load(UserInterface ui) {
+    public TaskList load(UserInterface ui) {
         ArrayList<Task> tasks = new ArrayList<>();
         File file = filePath.toFile();
         if (!file.exists()) {
-            return tasks;
+            return new TaskList(tasks);
         }
 
         try (Scanner fileScanner = new Scanner(file)) {
@@ -100,20 +100,31 @@ public class Storage {
             }
         }
 
-        return tasks;
+        return new TaskList(tasks);
     }
 
     /**
      * Loads saved tasks from the data file without an explicit UserInterface reference.
      *
-     * @return An ArrayList containing the loaded Task objects.
+     * @return A TaskList containing the loaded Task objects.
      */
-    public ArrayList<Task> load() {
+    public TaskList load() {
         return load(null);
     }
 
     /**
-     * Saves the list of tasks to the storage file.
+     * Saves the TaskList to the storage file.
+     * Creates parent directories if they do not already exist.
+     *
+     * @param taskList The TaskList to save.
+     * @param ui       The UserInterface instance for reporting save errors, or null.
+     */
+    public void save(TaskList taskList, UserInterface ui) {
+        save(taskList.getAllTasks(), ui);
+    }
+
+    /**
+     * Saves an ArrayList of tasks to the storage file.
      * Creates parent directories if they do not already exist.
      *
      * @param tasks The list of tasks to save.
@@ -140,12 +151,12 @@ public class Storage {
     }
 
     /**
-     * Saves the list of tasks to the storage file without an explicit UserInterface reference.
+     * Saves the TaskList to the storage file without an explicit UserInterface reference.
      *
-     * @param tasks The list of tasks to save.
+     * @param taskList The TaskList to save.
      */
-    public void save(ArrayList<Task> tasks) {
-        save(tasks, null);
+    public void save(TaskList taskList) {
+        save(taskList, null);
     }
 
     /**
