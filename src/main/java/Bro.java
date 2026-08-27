@@ -44,18 +44,29 @@ public class Bro {
                 boolean isDone = parts[1].equals("1");
                 String description = parts[2];
 
-                Task task = switch (taskType) {
-                    case "T" -> new Todo(description);
-                    case "D" -> (parts.length >= 4) ? new Deadline(description, parts[3]) : null;
-                    case "E" -> {
-                        if (parts.length < 4) {
+                Task task = null;
+                try {
+                    task = switch (taskType) {
+                        case "T" -> new Todo(description);
+                        case "D" -> (parts.length >= 4) ? new Deadline(description, parts[3]) : null;
+                        case "E" -> {
+                            if (parts.length >= 5) {
+                                yield new Event(description, parts[3], parts[4]);
+                            } else if (parts.length == 4) {
+                                String[] times = parts[3].split(" /to | to | - | -|-", 2);
+                                if (times.length == 2) {
+                                    yield new Event(description, times[0], times[1]);
+                                }
+                                yield null;
+                            }
                             yield null;
                         }
-                        String[] times = parts[3].split("-", 2);
-                        yield (times.length == 2) ? new Event(description, times[0], times[1]) : null;
-                    }
-                    default -> null;
-                };
+                        default -> null;
+                    };
+                } catch (BroException e) {
+                    // Skip tasks with corrupted/invalid date entries
+                    continue;
+                }
 
                 if (task != null) {
                     if (isDone) {
@@ -186,7 +197,7 @@ public class Bro {
                             throw new BroException("\t"
                                     + "I think you forgot to add the deadline bro, write 'deadline [task] /by [deadline]'");
                         }
-                        Deadline newDeadline = new Deadline(details[0], details[1]);
+                        Deadline newDeadline = new Deadline(details[0].trim(), details[1].trim());
                         tasks.add(newDeadline);
                         saveTasksToFile(DATA_FILE_PATH, tasks);
                         System.out.println("\t" + "I gotchu bro, added this task:\n\t  " + newDeadline);
@@ -201,8 +212,8 @@ public class Bro {
                         Matcher matcher = pattern.matcher(arguments);
 
                         if (matcher.find()) {
-                            Event newEvent = new Event(matcher.group("task"), matcher.group("start"),
-                                    matcher.group("end"));
+                            Event newEvent = new Event(matcher.group("task").trim(), matcher.group("start").trim(),
+                                    matcher.group("end").trim());
                             tasks.add(newEvent);
                             saveTasksToFile(DATA_FILE_PATH, tasks);
                             System.out.println("\t" + "I gotchu bro, added this task:\n\t  " + newEvent);
