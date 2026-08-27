@@ -1,3 +1,8 @@
+import java.time.LocalDate;
+
+/**
+ * Abstract representation of a task in the Bro application.
+ */
 public abstract class Task {
     protected final String task;
     protected boolean isDone;
@@ -18,6 +23,21 @@ public abstract class Task {
 
     public void unmarkDone() {
         this.isDone = false;
+    }
+
+    public boolean isDone() {
+        return this.isDone;
+    }
+
+    /**
+     * Checks whether this task occurs on or involves the given date.
+     * Default implementation returns false. Subclasses should override where appropriate.
+     *
+     * @param date The LocalDate to check against.
+     * @return True if the task involves the given date, false otherwise.
+     */
+    public boolean isOnDate(LocalDate date) {
+        return false;
     }
 
     @Override
