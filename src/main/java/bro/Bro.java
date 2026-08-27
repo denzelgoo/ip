@@ -4,6 +4,17 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
+import bro.command.Command;
+import bro.exception.BroException;
+import bro.parser.Parser;
+import bro.storage.Storage;
+import bro.task.Deadline;
+import bro.task.Event;
+import bro.task.Task;
+import bro.task.TaskList;
+import bro.task.Todo;
+import bro.ui.UserInterface;
+
 /**
  * Main application class for the Bro chatbot.
  * Coordinates user interaction, task storage, parsing, and command execution.

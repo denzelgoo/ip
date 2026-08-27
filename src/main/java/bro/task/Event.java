@@ -1,6 +1,8 @@
-package bro;
+package bro.task;
 
 import java.time.LocalDate;
+
+import bro.exception.BroException;
 
 /**
  * Represents an event task spanning a specific start and end time.

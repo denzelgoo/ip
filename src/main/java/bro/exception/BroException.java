@@ -1,4 +1,4 @@
-package bro;
+package bro.exception;
 
 public class BroException extends Exception {
     public BroException(String message) {

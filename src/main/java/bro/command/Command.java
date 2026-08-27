@@ -1,4 +1,4 @@
-package bro;
+package bro.command;
 
 public enum Command {
     LIST,

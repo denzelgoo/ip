@@ -1,6 +1,8 @@
-package bro;
+package bro.task;
 
 import java.time.LocalDate;
+
+import bro.exception.BroException;
 
 /**
  * Represents a task with a deadline.
