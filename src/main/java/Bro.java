@@ -2,24 +2,25 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Bro {
-    private static final String DATA_FILE_PATH = "./data/bro.txt";
+    private static final Path DATA_FILE_PATH = Path.of("data", "bro.txt");
 
     /**
      * Loads saved tasks from a file into an ArrayList of Task objects.
-     * Assumes the file contains properly formatted task entries (happy path).
+     * Handles missing files gracefully by returning an empty list, and safely skips malformed lines.
      *
-     * @param filePath The relative or absolute path to the data file.
+     * @param filePath The relative path to the data file.
      * @return An ArrayList containing the loaded Task objects, or an empty list if the file does not exist.
      */
-    private static ArrayList<Task> loadTasksFromFile(String filePath) {
+    private static ArrayList<Task> loadTasksFromFile(Path filePath) {
         ArrayList<Task> tasks = new ArrayList<>();
-        File file = new File(filePath);
+        File file = filePath.toFile();
         if (!file.exists()) {
             return tasks;
         }
@@ -35,16 +36,23 @@ public class Bro {
                 }
 
                 String[] parts = line.split(" \\| ");
+                if (parts.length < 3) {
+                    continue;
+                }
+
                 String taskType = parts[0];
                 boolean isDone = parts[1].equals("1");
                 String description = parts[2];
 
                 Task task = switch (taskType) {
                     case "T" -> new Todo(description);
-                    case "D" -> new Deadline(description, parts[3]);
+                    case "D" -> (parts.length >= 4) ? new Deadline(description, parts[3]) : null;
                     case "E" -> {
+                        if (parts.length < 4) {
+                            yield null;
+                        }
                         String[] times = parts[3].split("-", 2);
-                        yield new Event(description, times[0], times[1]);
+                        yield (times.length == 2) ? new Event(description, times[0], times[1]) : null;
                     }
                     default -> null;
                 };
@@ -65,13 +73,14 @@ public class Bro {
 
     /**
      * Saves the current list of tasks to the specified file.
+     * Creates parent directories if they do not already exist.
      *
-     * @param filePath The relative or absolute path to the data file.
+     * @param filePath The relative path to the data file.
      * @param tasks    The list of tasks to be saved.
      */
-    private static void saveTasksToFile(String filePath, ArrayList<Task> tasks) {
+    private static void saveTasksToFile(Path filePath, ArrayList<Task> tasks) {
         try {
-            File file = new File(filePath);
+            File file = filePath.toFile();
             // Create parent directories if they don't exist
             if (file.getParentFile() != null) {
                 file.getParentFile().mkdirs();
