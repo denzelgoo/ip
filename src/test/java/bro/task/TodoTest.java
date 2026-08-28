@@ -8,6 +8,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
 
+/**
+ * Unit tests for {@link Todo}.
+ */
 public class TodoTest {
     @Test
     public void testStringConversion() {
