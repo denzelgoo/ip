@@ -113,6 +113,28 @@ public class UserInterface {
     }
 
     /**
+     * Displays tasks containing the string keywords.
+     * 
+     * @param keywords The keyword or keyword phrase queried by the user.
+     * @param matchingTasks The tasks matching or involving the queried keyword/keyword phrase.
+     */
+    public void showTasksContainingKeywords(String keywords, ArrayList<Task> matchingTasks) {
+        if (matchingTasks.isEmpty()) {
+            String message = String.format(
+                    "\tSorry bro, I couldn't find any tasks containing '%s', can you check that you didn't make a typo?",
+                    keywords);
+            System.out.println(message);
+        } else {
+            String message = String.format(
+                    "\tNo problem bro, here are the tasks containing '%s':", keywords);
+            System.out.println(message);
+            for (int i = 0; i < matchingTasks.size(); i++) {
+                System.out.println("\t" + (i + 1) + ". " + matchingTasks.get(i));
+            }
+        }
+    }
+
+    /**
      * Displays confirmation that a task was successfully added.
      *
      * @param task      The task that was added.

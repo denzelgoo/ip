@@ -169,6 +169,63 @@ public class TaskListTest {
     }
 
     // -------------------------------------------------------------------------
+    // findTasksByKeywords tests
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void testFindTasksByKeywords_matchingKeyword_returnsMatchingTasks() throws BroException {
+        TaskList taskList = new TaskList();
+        Todo todo1 = new Todo("read book");
+        Deadline deadline = new Deadline("return book to library", "28/8/2026 2359");
+        Event event = new Event("book club meeting", "28/8/2026 1400", "28/8/2026 1600");
+        Todo todo2 = new Todo("buy groceries");
+
+        taskList.add(todo1);
+        taskList.add(deadline);
+        taskList.add(event);
+        taskList.add(todo2);
+
+        ArrayList<Task> matchingTasks = taskList.findTasksByKeywords("book");
+        assertEquals(3, matchingTasks.size());
+        assertTrue(matchingTasks.contains(todo1));
+        assertTrue(matchingTasks.contains(deadline));
+        assertTrue(matchingTasks.contains(event));
+        assertFalse(matchingTasks.contains(todo2));
+    }
+
+    @Test
+    public void testFindTasksByKeywords_noMatch_returnsEmptyList() {
+        TaskList taskList = new TaskList();
+        taskList.add(new Todo("read book"));
+        taskList.add(new Todo("buy groceries"));
+
+        ArrayList<Task> matchingTasks = taskList.findTasksByKeywords("gym");
+        assertNotNull(matchingTasks);
+        assertTrue(matchingTasks.isEmpty());
+    }
+
+    @Test
+    public void testFindTasksByKeywords_emptyList_returnsEmptyList() {
+        TaskList taskList = new TaskList();
+        ArrayList<Task> matchingTasks = taskList.findTasksByKeywords("book");
+
+        assertNotNull(matchingTasks);
+        assertTrue(matchingTasks.isEmpty());
+    }
+
+    @Test
+    public void testFindTasksByKeywords_phraseOrSubstringMatch() {
+        TaskList taskList = new TaskList();
+        Todo todo = new Todo("clean living room");
+        taskList.add(todo);
+        taskList.add(new Todo("clean kitchen"));
+
+        ArrayList<Task> matchingTasks = taskList.findTasksByKeywords("living room");
+        assertEquals(1, matchingTasks.size());
+        assertEquals(todo, matchingTasks.get(0));
+    }
+
+    // -------------------------------------------------------------------------
     // getAllTasks tests
     // -------------------------------------------------------------------------
 

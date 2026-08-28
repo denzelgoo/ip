@@ -92,6 +92,22 @@ public class TaskList {
     }
 
     /**
+     * Finds and returns all tasks which contain the string keywords.
+     * 
+     * @param keywords The keyword or keyword phrase to search for.
+     * @return An ArrayList of matching Task objects.
+     */
+    public ArrayList<Task> findTasksByKeywords(String keywords) {
+        ArrayList<Task> matchingTasks = new ArrayList<>();
+        for (Task task : this.tasks) {
+            if (task.containsKeywords(keywords)) {
+                matchingTasks.add(task);
+            }
+        }
+        return matchingTasks;
+    }
+
+    /**
      * Returns the underlying list of tasks.
      *
      * @return An ArrayList containing all tasks.

@@ -59,6 +59,11 @@ public class Bro {
                     case LIST -> {
                         ui.showTaskList(tasks);
                     }
+                    case FIND -> {
+                        // arguments will be the keywords to search for
+                        ArrayList<Task> matchingTasks = tasks.findTasksByKeywords(arguments);
+                        ui.showTasksContainingKeywords(arguments, matchingTasks);
+                    }
                     case TASKS -> {
                         LocalDate targetDate = Parser.parseQueryDate(arguments);
                         ArrayList<Task> matchingTasks = tasks.findTasksOnDate(targetDate);
