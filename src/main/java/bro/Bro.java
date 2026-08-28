@@ -123,6 +123,11 @@ public class Bro {
         ui.close();
     }
 
+    /**
+     * Main entry point to launch the Bro chatbot.
+     * 
+     * @param args Command-line arguments.
+     */
     public static void main(String[] args) {
         new Bro().run();
     }
