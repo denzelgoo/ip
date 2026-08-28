@@ -56,6 +56,10 @@ public abstract class Task {
         return (isDone ? "1" : "0");
     }
 
+    public String getTask() {
+        return this.task;
+    }
+
     /**
      * Formats the task into a pipe-delimited string for text file storage.
      */
