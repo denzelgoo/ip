@@ -7,6 +7,11 @@ import java.time.LocalDate;
  * Uncompleted todos persist across all dates until marked done.
  */
 public class Todo extends Task {
+    /**
+     * Constructs a Todo task with the specified description.
+     *
+     * @param task The description of the todo task.
+     */
     public Todo(String task) {
         super(task);
     }
