@@ -3,6 +3,7 @@ package bro.command;
 public enum Command {
     LIST,
     TASKS,
+    FIND,
     MARK,
     UNMARK,
     DELETE,

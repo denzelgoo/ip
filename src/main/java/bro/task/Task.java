@@ -43,6 +43,16 @@ public abstract class Task {
         return false;
     }
 
+    /**
+     * Checks whether this task contains the string keywords.
+     * 
+     * @param keywords The keyword or keyword phrase to check against.
+     * @return True if the task contains the string keywords, false otherwise.
+     */
+    public boolean containsKeywords(String keywords) {
+        return this.task.contains(keywords);
+    }
+
     @Override
     public String toString() {
         if (this.isDone) {
