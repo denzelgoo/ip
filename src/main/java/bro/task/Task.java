@@ -55,13 +55,16 @@ public abstract class Task {
     }
 
     /**
-     * Checks whether this task contains the string keywords.
+     * Checks whether this task contains the string keywords (case-insensitive).
      *
      * @param keywords The keyword or keyword phrase to check against.
      * @return True if the task contains the string keywords, false otherwise.
      */
     public boolean containsKeywords(String keywords) {
-        return this.task.contains(keywords);
+        if (keywords == null) {
+            return false;
+        }
+        return this.task.toLowerCase().contains(keywords.toLowerCase());
     }
 
     @Override
