@@ -86,6 +86,8 @@ public abstract class Task {
 
     /**
      * Formats the task into a pipe-delimited string for text file storage.
+     *
+     * @return The formatted string representation for storage.
      */
     public abstract String toFileFormat();
 }

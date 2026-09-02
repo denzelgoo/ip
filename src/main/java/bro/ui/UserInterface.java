@@ -40,20 +40,29 @@ public class UserInterface {
 
     /**
      * Displays the initial welcome greeting and ASCII banner.
+     *
+     * @return The welcome message string.
      */
-    public void showWelcome() {
+    public String showWelcome() {
+        String welcomeMsg = "What's up bro, I'm Bro.\n" + "If you need anything, just ask bro.";
+
         System.out.println(DIVIDER_LINE);
         System.out.println(BANNER);
-        System.out.println("What's up bro, I'm Bro.");
-        System.out.println("If you need anything, just ask bro.");
+        System.out.println(welcomeMsg);
         System.out.println(DIVIDER_LINE + "\n");
+
+        return welcomeMsg;
     }
 
     /**
      * Displays the goodbye message when exiting.
+     *
+     * @return The goodbye message string.
      */
-    public void showGoodbye() {
-        System.out.println("\tSee you soon bro.");
+    public String showGoodbye() {
+        String goodbyeMsg = "See you soon bro.";
+        System.out.println("\t" + goodbyeMsg);
+        return goodbyeMsg;
     }
 
     /**
@@ -74,24 +83,36 @@ public class UserInterface {
      * Displays all tasks currently stored in the TaskList.
      *
      * @param tasks The TaskList to display.
+     * @return The formatted string representation of the task list.
      */
-    public void showTaskList(TaskList tasks) {
+    public String showTaskList(TaskList tasks) {
+        String displayList = "Here are the tasks you have bro:";
+
         System.out.println("\tHere are the tasks you have bro:");
         for (int i = 0; i < tasks.size(); i++) {
+            displayList += "\n" + (i + 1) + ". " + tasks.get(i);
             System.out.println("\t" + (i + 1) + ". " + tasks.get(i));
         }
+
+        return displayList;
     }
 
     /**
      * Displays all tasks currently stored in an ArrayList.
      *
      * @param tasks The list of tasks to display.
+     * @return The formatted string representation of the task list.
      */
-    public void showTaskList(ArrayList<Task> tasks) {
+    public String showTaskList(ArrayList<Task> tasks) {
+        String displayList = "Here are the tasks you have bro:";
+
         System.out.println("\tHere are the tasks you have bro:");
         for (int i = 0; i < tasks.size(); i++) {
+            displayList += "\n" + (i + 1) + ". " + tasks.get(i);
             System.out.println("\t" + (i + 1) + ". " + tasks.get(i));
         }
+
+        return displayList;
     }
 
     /**
@@ -99,17 +120,25 @@ public class UserInterface {
      *
      * @param targetDate    The date queried by the user.
      * @param matchingTasks The tasks matching or involving the queried date.
+     * @return The formatted string of tasks occurring on the queried date.
      */
-    public void showTasksForDate(LocalDate targetDate, ArrayList<Task> matchingTasks) {
+    public String showTasksForDate(LocalDate targetDate, ArrayList<Task> matchingTasks) {
+        String displayList;
+
         String formattedDate = targetDate.format(DateTimeFormatter.ofPattern("MMM dd yyyy", Locale.ENGLISH));
         if (matchingTasks.isEmpty()) {
             System.out.println("\tYou don't have any tasks for " + formattedDate + " bro!");
+            return "You don't have any tasks for " + formattedDate + " bro!";
         } else {
+            displayList = "Here are the tasks happening on " + formattedDate + " bro:";
             System.out.println("\tHere are the tasks happening on " + formattedDate + " bro:");
             for (int i = 0; i < matchingTasks.size(); i++) {
+                displayList += "\n" + (i + 1) + ". " + matchingTasks.get(i);
                 System.out.println("\t" + (i + 1) + ". " + matchingTasks.get(i));
             }
         }
+
+        return displayList;
     }
 
     /**
@@ -118,22 +147,30 @@ public class UserInterface {
      * @param keywords      The keyword or keyword phrase queried by the user.
      * @param matchingTasks The tasks matching or involving the queried
      *                      keyword/keyword phrase.
+     * @return The formatted string of tasks containing the keywords.
      */
-    public void showTasksContainingKeywords(String keywords, ArrayList<Task> matchingTasks) {
+    public String showTasksContainingKeywords(String keywords, ArrayList<Task> matchingTasks) {
+        String displayList;
+
         if (matchingTasks.isEmpty()) {
             String message = String.format(
-                    "\tSorry bro, I couldn't find any tasks containing '%s', "
+                    "Sorry bro, I couldn't find any tasks containing '%s', "
                             + "can you check that you didn't make a typo?",
                     keywords);
-            System.out.println(message);
+            System.out.println("\t" + message);
+            return message;
         } else {
             String message = String.format(
-                    "\tNo problem bro, here are the tasks containing '%s':", keywords);
-            System.out.println(message);
+                    "No problem bro, here are the tasks containing '%s':", keywords);
+            displayList = message;
+            System.out.println("\t" + message);
             for (int i = 0; i < matchingTasks.size(); i++) {
+                displayList += "\n" + (i + 1) + ". " + matchingTasks.get(i);
                 System.out.println("\t" + (i + 1) + ". " + matchingTasks.get(i));
             }
         }
+
+        return displayList;
     }
 
     /**
@@ -141,10 +178,15 @@ public class UserInterface {
      *
      * @param task      The task that was added.
      * @param totalSize The new total count of tasks.
+     * @return The confirmation message of the added task.
      */
-    public void showTaskAdded(Task task, int totalSize) {
-        System.out.println("\tI gotchu bro, added this task:\n\t  " + task);
-        showTaskCount(totalSize);
+    public String showTaskAdded(Task task, int totalSize) {
+        String msg = "I gotchu bro, added this task:\n\t  " + task;
+
+        System.out.println("\t" + msg);
+        msg += "\n" + showTaskCount(totalSize);
+
+        return msg;
     }
 
     /**
@@ -152,43 +194,61 @@ public class UserInterface {
      *
      * @param task      The removed task.
      * @param totalSize The remaining total count of tasks.
+     * @return The confirmation message of the deleted task.
      */
-    public void showTaskDeleted(Task task, int totalSize) {
+    public String showTaskDeleted(Task task, int totalSize) {
+        String msg = "No problem bro, I've removed this task:\n" + " " + task;
+
         System.out.println("\tNo problem bro, I've removed this task:");
         System.out.println("\t  " + task);
-        showTaskCount(totalSize);
+        msg += "\n" + showTaskCount(totalSize);
+
+        return msg;
     }
 
     /**
      * Displays confirmation that a task was marked as done.
      *
      * @param task The marked task.
+     * @return The confirmation message of the marked task.
      */
-    public void showTaskMarked(Task task) {
+    public String showTaskMarked(Task task) {
+        String msg = "Nice bro, I've marked this task as done for you:\n" + " " + task;
+
         System.out.println("\tNice bro, I've marked this task as done for you:");
         System.out.println("\t  " + task);
+
+        return msg;
     }
 
     /**
      * Displays confirmation that a task was unmarked as not done.
      *
      * @param task The unmarked task.
+     * @return The confirmation message of the unmarked task.
      */
-    public void showTaskUnmarked(Task task) {
+    public String showTaskUnmarked(Task task) {
+        String msg = "That's tough bro, I've marked this task as not done yet:\n" + " " + task;
+
         System.out.println("\tThat's tough bro, I've marked this task as not done yet:");
         System.out.println("\t  " + task);
+
+        return msg;
     }
 
     /**
      * Displays the current count of tasks in the list.
      *
      * @param size The number of tasks in the list.
+     * @return The formatted task count message string.
      */
-    public void showTaskCount(int size) {
+    public String showTaskCount(int size) {
         if (size > 1 || size == 0) {
             System.out.println("\tNow you have " + size + " tasks in the list.");
+            return "Now you have " + size + " tasks in the list.";
         } else {
             System.out.println("\tNow you have " + size + " task in the list.");
+            return "Now you have " + size + " task in the list.";
         }
     }
 
@@ -196,41 +256,53 @@ public class UserInterface {
      * Displays an error message to the user.
      *
      * @param message The error message to print.
+     * @return The stripped error message string.
      */
-    public void showError(String message) {
+    public String showError(String message) {
         System.out.println(message);
+        return message.strip();
     }
 
     /**
      * Displays an error message when a task number input is invalid.
+     *
+     * @return The invalid task number error message string.
      */
-    public void showInvalidTaskNumberError() {
+    public String showInvalidTaskNumberError() {
         System.out.println("\tBro...please enter a valid task number.");
+        return "Bro...please enter a valid task number.";
     }
 
     /**
      * Displays an error message when the selected task index does not exist.
+     *
+     * @return The non-existent task error message string.
      */
-    public void showNoSuchTaskError() {
+    public String showNoSuchTaskError() {
         System.out.println("\tUhh...that item doesn't exist in your list bro.");
+        return "Uhh...that item doesn't exist in your list bro.";
     }
 
     /**
      * Displays an error message when loading tasks from file fails.
      *
      * @param message The underlying error detail.
+     * @return The loading error message string.
      */
-    public void showLoadingError(String message) {
+    public String showLoadingError(String message) {
         System.out.println("\tOops, couldn't load tasks from file bro: " + message);
+        return "Oops, couldn't load tasks from file bro: " + message;
     }
 
     /**
      * Displays an error message when saving tasks to file fails.
      *
      * @param message The underlying error detail.
+     * @return The saving error message string.
      */
-    public void showSavingError(String message) {
+    public String showSavingError(String message) {
         System.out.println("\tOops, couldn't save your tasks to file bro: " + message);
+        return "Oops, couldn't save your tasks to file bro: " + message;
     }
 
     /**
