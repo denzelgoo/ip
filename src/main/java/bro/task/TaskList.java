@@ -92,7 +92,7 @@ public class TaskList {
     }
 
     /**
-     * Finds and returns all tasks which contain the string keywords.
+     * Finds and returns all tasks which contain the string keywords (case-insensitive).
      *
      * @param keywords The keyword or keyword phrase to search for.
      * @return An ArrayList of matching Task objects.
@@ -100,7 +100,7 @@ public class TaskList {
     public ArrayList<Task> findTasksByKeywords(String keywords) {
         ArrayList<Task> matchingTasks = new ArrayList<>();
         for (Task task : this.tasks) {
-            if (task.containsKeywords(keywords)) {
+            if (task.containsKeywords(keywords.toLowerCase())) {
                 matchingTasks.add(task);
             }
         }
