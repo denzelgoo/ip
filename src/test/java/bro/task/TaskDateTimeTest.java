@@ -23,7 +23,7 @@ public class TaskDateTimeTest {
     // -------------------------------------------------------------------------
 
     @Test
-    public void testConstructors() {
+    public void constructor_variousInputs_fieldsInitializedCorrectly() {
         LocalDateTime dt = LocalDateTime.of(2026, 8, 28, 18, 0);
 
         TaskDateTime dateTimeWithTime = new TaskDateTime(dt, true);
@@ -49,7 +49,7 @@ public class TaskDateTimeTest {
     // -------------------------------------------------------------------------
 
     @Test
-    public void testParse_dateTimeFormats_success() throws BroException {
+    public void parse_dateTimeFormats_success() throws BroException {
         LocalDateTime expected = LocalDateTime.of(2026, 8, 28, 18, 0);
 
         // "d/M/yyyy HHmm"
@@ -88,7 +88,7 @@ public class TaskDateTimeTest {
     // -------------------------------------------------------------------------
 
     @Test
-    public void testParse_dateOnlyFormats_success() throws BroException {
+    public void parse_dateOnlyFormats_success() throws BroException {
         LocalDate expectedDate = LocalDate.of(2026, 8, 28);
         LocalDateTime expectedDt = expectedDate.atStartOfDay();
 
@@ -117,7 +117,7 @@ public class TaskDateTimeTest {
     // -------------------------------------------------------------------------
 
     @Test
-    public void testParse_unparseableRawString_storesRawString() throws BroException {
+    public void parse_unparseableRawString_rawStringStored() throws BroException {
         TaskDateTime dt = TaskDateTime.parse("tomorrow 2pm");
         assertFalse(dt.isParsedDateTime());
         assertFalse(dt.hasTime());
@@ -127,7 +127,7 @@ public class TaskDateTimeTest {
     }
 
     @Test
-    public void testParse_nullOrEmptyInput_throwsBroException() {
+    public void parse_nullOrEmptyInput_exceptionThrown() {
         assertThrows(BroException.class, () -> TaskDateTime.parse(null));
         assertThrows(BroException.class, () -> TaskDateTime.parse(""));
         assertThrows(BroException.class, () -> TaskDateTime.parse("   "));
@@ -138,21 +138,21 @@ public class TaskDateTimeTest {
     // -------------------------------------------------------------------------
 
     @Test
-    public void testFormatDisplay_and_formatFile_withTime() throws BroException {
+    public void formatDisplayAndFile_withTime_formattedCorrectly() throws BroException {
         TaskDateTime dt = TaskDateTime.parse("28/8/2026 1800");
         assertEquals("Aug 28 2026, 6:00PM", dt.formatDisplay());
         assertEquals("2026-08-28 1800", dt.formatFile());
     }
 
     @Test
-    public void testFormatDisplay_and_formatFile_dateOnly() throws BroException {
+    public void formatDisplayAndFile_dateOnly_formattedCorrectly() throws BroException {
         TaskDateTime dt = TaskDateTime.parse("2026-08-28");
         assertEquals("Aug 28 2026", dt.formatDisplay());
         assertEquals("2026-08-28", dt.formatFile());
     }
 
     @Test
-    public void testFormatDisplay_and_formatFile_rawFallback() throws BroException {
+    public void formatDisplayAndFile_rawFallback_formattedCorrectly() throws BroException {
         TaskDateTime dt = TaskDateTime.parse("Sunday evening");
         assertEquals("Sunday evening", dt.formatDisplay());
         assertEquals("Sunday evening", dt.formatFile());
@@ -163,7 +163,7 @@ public class TaskDateTimeTest {
     // -------------------------------------------------------------------------
 
     @Test
-    public void testIsOnDate_parsedDateTime() throws BroException {
+    public void isOnDate_parsedDateTime_matchesCorrectly() throws BroException {
         TaskDateTime dt = TaskDateTime.parse("28/8/2026 1800");
         LocalDate matchingDate = LocalDate.of(2026, 8, 28);
         LocalDate differentDate = LocalDate.of(2026, 8, 29);
@@ -174,7 +174,7 @@ public class TaskDateTimeTest {
     }
 
     @Test
-    public void testIsOnDate_rawString_returnsFalse() throws BroException {
+    public void isOnDate_rawString_falseReturned() throws BroException {
         TaskDateTime dt = TaskDateTime.parse("tomorrow");
         LocalDate someDate = LocalDate.of(2026, 8, 28);
 
@@ -187,7 +187,7 @@ public class TaskDateTimeTest {
     // -------------------------------------------------------------------------
 
     @Test
-    public void testParseQueryDate_dateOnlyFormats_success() throws BroException {
+    public void parseQueryDate_dateOnlyFormats_localDateReturned() throws BroException {
         LocalDate expected = LocalDate.of(2026, 8, 28);
 
         assertEquals(expected, TaskDateTime.parseQueryDate("2026-08-28"));
@@ -197,7 +197,7 @@ public class TaskDateTimeTest {
     }
 
     @Test
-    public void testParseQueryDate_withTimeFormats_success() throws BroException {
+    public void parseQueryDate_withTimeFormats_localDateReturned() throws BroException {
         LocalDate expected = LocalDate.of(2026, 8, 28);
 
         assertEquals(expected, TaskDateTime.parseQueryDate("28/8/2026 1800"));
@@ -207,7 +207,7 @@ public class TaskDateTimeTest {
     }
 
     @Test
-    public void testParseQueryDate_nullOrEmpty_throwsBroException() {
+    public void parseQueryDate_nullOrEmptyInput_exceptionThrown() {
         BroException e1 = assertThrows(BroException.class, () -> TaskDateTime.parseQueryDate(null));
         assertTrue(e1.getMessage().contains("please tell me which date you want to check"));
 
@@ -219,7 +219,7 @@ public class TaskDateTimeTest {
     }
 
     @Test
-    public void testParseQueryDate_invalidFormat_throwsBroException() {
+    public void parseQueryDate_invalidFormat_exceptionThrown() {
         BroException e = assertThrows(BroException.class, () -> TaskDateTime.parseQueryDate("invalid date"));
         assertTrue(e.getMessage().contains("please use a valid date format"));
     }

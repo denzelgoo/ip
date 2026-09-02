@@ -18,7 +18,7 @@ import bro.exception.BroException;
 public class ParserTest {
 
     @Test
-    public void testParserInstantiation() {
+    public void constructor_noParameters_instanceCreated() {
         Parser parser = new Parser();
         assertNotNull(parser);
     }
@@ -28,7 +28,7 @@ public class ParserTest {
     // -------------------------------------------------------------------------
 
     @Test
-    public void testParseCommand_validCommands_success() {
+    public void parseCommand_validCommands_correctCommandReturned() {
         assertEquals(Command.TODO, Parser.parseCommand("todo test task"));
         assertEquals(Command.DEADLINE, Parser.parseCommand("deadline test /by 28/8/2026"));
         assertEquals(Command.EVENT, Parser.parseCommand("event test /from 28/8/2026 /to 29/8/2026"));
@@ -41,7 +41,7 @@ public class ParserTest {
     }
 
     @Test
-    public void testParseCommand_unknownAndEmpty_returnsUnknown() {
+    public void parseCommand_unknownOrEmptyInput_unknownReturned() {
         assertEquals(Command.UNKNOWN, Parser.parseCommand("unknownCommand 123"));
         assertEquals(Command.UNKNOWN, Parser.parseCommand(""));
         assertEquals(Command.UNKNOWN, Parser.parseCommand("   "));
@@ -53,13 +53,13 @@ public class ParserTest {
     // -------------------------------------------------------------------------
 
     @Test
-    public void testParseArguments_withArguments_success() {
+    public void parseArguments_commandWithArguments_argumentsReturned() {
         assertEquals("read book", Parser.parseArguments("todo read book"));
         assertEquals("return book /by 28/8/2026", Parser.parseArguments("deadline return book /by 28/8/2026"));
     }
 
     @Test
-    public void testParseArguments_noArgumentsOrEmpty_returnsEmptyString() {
+    public void parseArguments_noArgumentsOrEmptyInput_emptyStringReturned() {
         assertEquals("", Parser.parseArguments("list"));
         assertEquals("", Parser.parseArguments("bye"));
         assertEquals("", Parser.parseArguments(""));
@@ -72,14 +72,14 @@ public class ParserTest {
     // -------------------------------------------------------------------------
 
     @Test
-    public void testParseTaskIndex_validInput_returnsZeroBasedIndex() throws BroException {
+    public void parseTaskIndex_validInput_zeroBasedIndexReturned() throws BroException {
         assertEquals(0, Parser.parseTaskIndex("1", "error message"));
         assertEquals(4, Parser.parseTaskIndex("5", "error message"));
         assertEquals(2, Parser.parseTaskIndex("  3  ", "error message"));
     }
 
     @Test
-    public void testParseTaskIndex_nullOrEmptyInput_throwsBroException() {
+    public void parseTaskIndex_nullOrEmptyInput_exceptionThrown() {
         BroException e1 = assertThrows(BroException.class, () -> Parser.parseTaskIndex(null, "custom error 1"));
         assertEquals("custom error 1", e1.getMessage());
 
@@ -91,7 +91,7 @@ public class ParserTest {
     }
 
     @Test
-    public void testParseTaskIndex_nonNumericInput_throwsNumberFormatException() {
+    public void parseTaskIndex_nonNumericInput_exceptionThrown() {
         assertThrows(NumberFormatException.class, () -> Parser.parseTaskIndex("abc", "error"));
         assertThrows(NumberFormatException.class, () -> Parser.parseTaskIndex("1.5", "error"));
     }
@@ -101,13 +101,13 @@ public class ParserTest {
     // -------------------------------------------------------------------------
 
     @Test
-    public void testParseTodoDescription_validInput_returnsTrimmedDescription() throws BroException {
+    public void parseTodoDescription_validDescription_trimmedDescriptionReturned() throws BroException {
         assertEquals("buy milk", Parser.parseTodoDescription("buy milk"));
         assertEquals("buy groceries", Parser.parseTodoDescription("   buy groceries   "));
     }
 
     @Test
-    public void testParseTodoDescription_nullOrEmpty_throwsBroException() {
+    public void parseTodoDescription_nullOrEmptyInput_exceptionThrown() {
         assertThrows(BroException.class, () -> Parser.parseTodoDescription(null));
         assertThrows(BroException.class, () -> Parser.parseTodoDescription(""));
         assertThrows(BroException.class, () -> Parser.parseTodoDescription("    "));
@@ -118,7 +118,7 @@ public class ParserTest {
     // -------------------------------------------------------------------------
 
     @Test
-    public void testParseDeadlineArguments_validInput_returnsDetails() throws BroException {
+    public void parseDeadlineArguments_validArguments_detailsReturned() throws BroException {
         String[] result = Parser.parseDeadlineArguments("return book /by 28/8/2026 1800");
         assertArrayEquals(new String[] { "return book", "28/8/2026 1800" }, result);
 
@@ -127,24 +127,24 @@ public class ParserTest {
     }
 
     @Test
-    public void testParseDeadlineArguments_nullOrEmpty_throwsBroException() {
+    public void parseDeadlineArguments_nullOrEmptyInput_exceptionThrown() {
         assertThrows(BroException.class, () -> Parser.parseDeadlineArguments(null));
         assertThrows(BroException.class, () -> Parser.parseDeadlineArguments(""));
         assertThrows(BroException.class, () -> Parser.parseDeadlineArguments("   "));
     }
 
     @Test
-    public void testParseDeadlineArguments_missingByFlag_throwsBroException() {
+    public void parseDeadlineArguments_missingByFlag_exceptionThrown() {
         assertThrows(BroException.class, () -> Parser.parseDeadlineArguments("return book by 28/8/2026"));
     }
 
     @Test
-    public void testParseDeadlineArguments_blankDescription_throwsBroException() {
+    public void parseDeadlineArguments_blankDescription_exceptionThrown() {
         assertThrows(BroException.class, () -> Parser.parseDeadlineArguments("   /by 28/8/2026"));
     }
 
     @Test
-    public void testParseDeadlineArguments_blankDeadline_throwsBroException() {
+    public void parseDeadlineArguments_blankDeadline_exceptionThrown() {
         assertThrows(BroException.class, () -> Parser.parseDeadlineArguments("return book /by   "));
     }
 
@@ -153,7 +153,7 @@ public class ParserTest {
     // -------------------------------------------------------------------------
 
     @Test
-    public void testParseEventArguments_validInput_returnsDetails() throws BroException {
+    public void parseEventArguments_validArguments_detailsReturned() throws BroException {
         String[] result = Parser.parseEventArguments("project meeting /from 28/8/2026 1400 /to 28/8/2026 1600");
         assertArrayEquals(new String[] { "project meeting", "28/8/2026 1400", "28/8/2026 1600" }, result);
 
@@ -162,24 +162,24 @@ public class ParserTest {
     }
 
     @Test
-    public void testParseEventArguments_nullOrEmpty_throwsBroException() {
+    public void parseEventArguments_nullOrEmptyInput_exceptionThrown() {
         assertThrows(BroException.class, () -> Parser.parseEventArguments(null));
         assertThrows(BroException.class, () -> Parser.parseEventArguments(""));
         assertThrows(BroException.class, () -> Parser.parseEventArguments("    "));
     }
 
     @Test
-    public void testParseEventArguments_missingFromFlag_throwsBroException() {
+    public void parseEventArguments_missingFromFlag_exceptionThrown() {
         assertThrows(BroException.class, () -> Parser.parseEventArguments("project meeting /to 28/8/2026 1600"));
     }
 
     @Test
-    public void testParseEventArguments_missingToFlag_throwsBroException() {
+    public void parseEventArguments_missingToFlag_exceptionThrown() {
         assertThrows(BroException.class, () -> Parser.parseEventArguments("project meeting /from 28/8/2026 1400"));
     }
 
     @Test
-    public void testParseEventArguments_reversedFlags_throwsBroException() {
+    public void parseEventArguments_reversedFlags_exceptionThrown() {
         assertThrows(BroException.class, () -> Parser
                 .parseEventArguments("meeting /to 28/8/2026 1600 /from 28/8/2026 1400"));
     }
@@ -189,14 +189,14 @@ public class ParserTest {
     // -------------------------------------------------------------------------
 
     @Test
-    public void testParseQueryDate_validDate_returnsLocalDate() throws BroException {
+    public void parseQueryDate_validDate_localDateReturned() throws BroException {
         LocalDate expected = LocalDate.of(2026, 8, 28);
         assertEquals(expected, Parser.parseQueryDate("28/8/2026"));
         assertEquals(expected, Parser.parseQueryDate("2026-08-28"));
     }
 
     @Test
-    public void testParseQueryDate_invalidOrEmpty_throwsBroException() {
+    public void parseQueryDate_invalidOrEmptyInput_exceptionThrown() {
         assertThrows(BroException.class, () -> Parser.parseQueryDate(""));
         assertThrows(BroException.class, () -> Parser.parseQueryDate("invalid date"));
     }
