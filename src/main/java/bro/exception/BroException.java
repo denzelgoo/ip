@@ -6,7 +6,7 @@ package bro.exception;
 public class BroException extends Exception {
     /**
      * Constructs a BroException with the specified error message.
-     * 
+     *
      * @param message The message explaining the cause of the exception.
      */
     public BroException(String message) {
