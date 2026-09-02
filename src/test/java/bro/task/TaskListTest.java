@@ -23,7 +23,7 @@ public class TaskListTest {
     // -------------------------------------------------------------------------
 
     @Test
-    public void testDefaultConstructor_createsEmptyList() {
+    public void constructor_noArguments_emptyListCreated() {
         TaskList taskList = new TaskList();
         assertTrue(taskList.isEmpty());
         assertEquals(0, taskList.size());
@@ -32,7 +32,7 @@ public class TaskListTest {
     }
 
     @Test
-    public void testParameterizedConstructor_withExistingTasks() {
+    public void constructor_existingTasks_taskListCreated() {
         ArrayList<Task> initialTasks = new ArrayList<>();
         initialTasks.add(new Todo("read book"));
         initialTasks.add(new Todo("write tests"));
@@ -45,7 +45,7 @@ public class TaskListTest {
     }
 
     @Test
-    public void testParameterizedConstructor_withNull_createsEmptyList() {
+    public void constructor_nullTasks_emptyListCreated() {
         TaskList taskList = new TaskList(null);
         assertTrue(taskList.isEmpty());
         assertEquals(0, taskList.size());
@@ -57,7 +57,7 @@ public class TaskListTest {
     // -------------------------------------------------------------------------
 
     @Test
-    public void testAddAndGet() {
+    public void addAndGet_validTasks_tasksAddedAndRetrieved() {
         TaskList taskList = new TaskList();
         Todo todo1 = new Todo("buy groceries");
         Todo todo2 = new Todo("clean room");
@@ -73,7 +73,7 @@ public class TaskListTest {
     }
 
     @Test
-    public void testGet_outOfBounds_throwsException() {
+    public void get_outOfBoundsIndex_exceptionThrown() {
         TaskList taskList = new TaskList();
         assertThrows(IndexOutOfBoundsException.class, () -> taskList.get(0));
 
@@ -87,7 +87,7 @@ public class TaskListTest {
     // -------------------------------------------------------------------------
 
     @Test
-    public void testDelete_validIndex() {
+    public void delete_validIndex_taskDeletedAndReturned() {
         TaskList taskList = new TaskList();
         Todo todo1 = new Todo("task 1");
         Todo todo2 = new Todo("task 2");
@@ -105,7 +105,7 @@ public class TaskListTest {
     }
 
     @Test
-    public void testDelete_outOfBounds_throwsException() {
+    public void delete_outOfBoundsIndex_exceptionThrown() {
         TaskList taskList = new TaskList();
         assertThrows(IndexOutOfBoundsException.class, () -> taskList.delete(0));
 
@@ -119,7 +119,7 @@ public class TaskListTest {
     // -------------------------------------------------------------------------
 
     @Test
-    public void testFindTasksOnDate_filtersCorrectly() throws BroException {
+    public void findTasksOnDate_mixedTasks_matchingTasksReturned() throws BroException {
         TaskList taskList = new TaskList();
         LocalDate targetDate = LocalDate.of(2026, 8, 28);
 
@@ -159,7 +159,7 @@ public class TaskListTest {
     }
 
     @Test
-    public void testFindTasksOnDate_emptyList_returnsEmptyList() {
+    public void findTasksOnDate_emptyList_emptyListReturned() {
         TaskList taskList = new TaskList();
         LocalDate targetDate = LocalDate.of(2026, 8, 28);
         ArrayList<Task> results = taskList.findTasksOnDate(targetDate);
@@ -173,7 +173,7 @@ public class TaskListTest {
     // -------------------------------------------------------------------------
 
     @Test
-    public void testFindTasksByKeywords_matchingKeyword_returnsMatchingTasks() throws BroException {
+    public void findTasksByKeywords_matchingKeyword_matchingTasksReturned() throws BroException {
         TaskList taskList = new TaskList();
         Todo todo1 = new Todo("read book");
         Deadline deadline = new Deadline("return book to library", "28/8/2026 2359");
@@ -194,7 +194,7 @@ public class TaskListTest {
     }
 
     @Test
-    public void testFindTasksByKeywords_noMatch_returnsEmptyList() {
+    public void findTasksByKeywords_noMatch_emptyListReturned() {
         TaskList taskList = new TaskList();
         taskList.add(new Todo("read book"));
         taskList.add(new Todo("buy groceries"));
@@ -205,7 +205,7 @@ public class TaskListTest {
     }
 
     @Test
-    public void testFindTasksByKeywords_emptyList_returnsEmptyList() {
+    public void findTasksByKeywords_emptyList_emptyListReturned() {
         TaskList taskList = new TaskList();
         ArrayList<Task> matchingTasks = taskList.findTasksByKeywords("book");
 
@@ -214,7 +214,7 @@ public class TaskListTest {
     }
 
     @Test
-    public void testFindTasksByKeywords_phraseOrSubstringMatch() {
+    public void findTasksByKeywords_phraseMatch_matchingTasksReturned() {
         TaskList taskList = new TaskList();
         Todo todo = new Todo("clean living room");
         taskList.add(todo);
@@ -230,7 +230,7 @@ public class TaskListTest {
     // -------------------------------------------------------------------------
 
     @Test
-    public void testGetAllTasks_returnsUnderlyingList() {
+    public void getAllTasks_existingTasks_underlyingListReturned() {
         TaskList taskList = new TaskList();
         Todo todo = new Todo("buy milk");
         taskList.add(todo);

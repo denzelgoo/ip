@@ -114,14 +114,16 @@ public class UserInterface {
 
     /**
      * Displays tasks containing the string keywords.
-     * 
-     * @param keywords The keyword or keyword phrase queried by the user.
-     * @param matchingTasks The tasks matching or involving the queried keyword/keyword phrase.
+     *
+     * @param keywords      The keyword or keyword phrase queried by the user.
+     * @param matchingTasks The tasks matching or involving the queried
+     *                      keyword/keyword phrase.
      */
     public void showTasksContainingKeywords(String keywords, ArrayList<Task> matchingTasks) {
         if (matchingTasks.isEmpty()) {
             String message = String.format(
-                    "\tSorry bro, I couldn't find any tasks containing '%s', can you check that you didn't make a typo?",
+                    "\tSorry bro, I couldn't find any tasks containing '%s', "
+                            + "can you check that you didn't make a typo?",
                     keywords);
             System.out.println(message);
         } else {

@@ -113,6 +113,9 @@ public class Bro {
                     case UNKNOWN -> {
                         throw new BroException("\tI don't get what you're trying to say bro, can you try again?");
                     }
+                    default -> {
+                        throw new BroException("\tI don't get what you're trying to say bro, can you try again?");
+                    }
                 }
             } catch (BroException e) {
                 ui.showError(e.getMessage());
@@ -130,7 +133,7 @@ public class Bro {
 
     /**
      * Main entry point to launch the Bro chatbot.
-     * 
+     *
      * @param args Command-line arguments.
      */
     public static void main(String[] args) {

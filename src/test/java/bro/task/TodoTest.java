@@ -13,17 +13,17 @@ import org.junit.jupiter.api.Test;
  */
 public class TodoTest {
     @Test
-    public void testStringConversion() {
+    public void toString_uncompletedTodo_formattedStringReturned() {
         assertEquals("[T][ ] test todo task", new Todo("test todo task").toString());
     }
 
     @Test
-    public void testFileFormatConversion() {
+    public void toFileFormat_uncompletedTodo_formattedStringReturned() {
         assertEquals("T | 0 | test todo task", new Todo("test todo task").toFileFormat());
     }
 
     @Test
-    public void testMarkDone() {
+    public void markDone_uncompletedTodo_taskMarkedDone() {
         Todo todo = new Todo("test todo task");
         todo.markDone();
         assertTrue(todo.isDone());
@@ -32,7 +32,7 @@ public class TodoTest {
     }
 
     @Test
-    public void testUnmarkDone() {
+    public void unmarkDone_completedTodo_taskUnmarkedDone() {
         Todo todo = new Todo("test todo task");
         // mark as done first
         todo.markDone();
@@ -48,7 +48,7 @@ public class TodoTest {
     }
 
     @Test
-    public void testIsOnDate() {
+    public void isOnDate_completedAndUncompletedTodo_correctBooleanReturned() {
         Todo todo = new Todo("test todo task");
         // todo is not done, so it should always return true
         LocalDate testDate = LocalDate.of(2026, 8, 28);
