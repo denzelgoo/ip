@@ -76,15 +76,4 @@ public class DialogBox extends HBox {
         db.flip();
         return db;
     }
-
-    /**
-     * Creates a dialog box for Bro's response (alias for Duke).
-     *
-     * @param text Bro's response text.
-     * @param img  Bro's avatar image.
-     * @return A DialogBox configured for Bro.
-     */
-    public static DialogBox getDukeDialog(String text, Image img) {
-        return getBroDialog(text, img);
-    }
 }
