@@ -194,6 +194,41 @@ public class TaskListTest {
     }
 
     @Test
+    public void findTasksByKeywords_mixedCaseQuery_matchingTasksReturned() throws BroException {
+        TaskList taskList = new TaskList();
+        Todo todo1 = new Todo("Read Book");
+        Deadline deadline = new Deadline("RETURN BOOK TO LIBRARY", "28/8/2026 2359");
+        Event event = new Event("book club meeting", "28/8/2026 1400", "28/8/2026 1600");
+        Todo todo2 = new Todo("buy groceries");
+
+        taskList.add(todo1);
+        taskList.add(deadline);
+        taskList.add(event);
+        taskList.add(todo2);
+
+        // Search with uppercase query
+        ArrayList<Task> uppercaseResults = taskList.findTasksByKeywords("BOOK");
+        assertEquals(3, uppercaseResults.size());
+        assertTrue(uppercaseResults.contains(todo1));
+        assertTrue(uppercaseResults.contains(deadline));
+        assertTrue(uppercaseResults.contains(event));
+
+        // Search with mixed-case query
+        ArrayList<Task> mixedCaseResults = taskList.findTasksByKeywords("bOoK");
+        assertEquals(3, mixedCaseResults.size());
+        assertTrue(mixedCaseResults.contains(todo1));
+        assertTrue(mixedCaseResults.contains(deadline));
+        assertTrue(mixedCaseResults.contains(event));
+
+        // Search with lowercase query on mixed-case task descriptions
+        ArrayList<Task> lowercaseResults = taskList.findTasksByKeywords("book");
+        assertEquals(3, lowercaseResults.size());
+        assertTrue(lowercaseResults.contains(todo1));
+        assertTrue(lowercaseResults.contains(deadline));
+        assertTrue(lowercaseResults.contains(event));
+    }
+
+    @Test
     public void findTasksByKeywords_noMatch_emptyListReturned() {
         TaskList taskList = new TaskList();
         taskList.add(new Todo("read book"));
@@ -216,11 +251,11 @@ public class TaskListTest {
     @Test
     public void findTasksByKeywords_phraseMatch_matchingTasksReturned() {
         TaskList taskList = new TaskList();
-        Todo todo = new Todo("clean living room");
+        Todo todo = new Todo("clean Living Room");
         taskList.add(todo);
         taskList.add(new Todo("clean kitchen"));
 
-        ArrayList<Task> matchingTasks = taskList.findTasksByKeywords("living room");
+        ArrayList<Task> matchingTasks = taskList.findTasksByKeywords("living ROOM");
         assertEquals(1, matchingTasks.size());
         assertEquals(todo, matchingTasks.get(0));
     }

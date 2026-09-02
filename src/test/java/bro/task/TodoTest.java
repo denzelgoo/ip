@@ -58,4 +58,18 @@ public class TodoTest {
         todo.markDone();
         assertFalse(todo.isOnDate(testDate));
     }
+
+    @Test
+    public void containsKeywords_variousCases_correctBooleanReturned() {
+        Todo todo = new Todo("Read Book for CS2103T");
+        assertTrue(todo.containsKeywords("read"));
+        assertTrue(todo.containsKeywords("READ"));
+        assertTrue(todo.containsKeywords("BOOK"));
+        assertTrue(todo.containsKeywords("bOoK"));
+        assertTrue(todo.containsKeywords("cs2103t"));
+        assertTrue(todo.containsKeywords("CS2103T"));
+        assertTrue(todo.containsKeywords("Read Book"));
+        assertTrue(todo.containsKeywords("rEaD bOoK"));
+        assertFalse(todo.containsKeywords("math"));
+    }
 }
