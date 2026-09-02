@@ -131,9 +131,10 @@ public class Storage {
      * @param taskList The TaskList to save.
      * @param ui       The UserInterface instance for reporting save errors, or
      *                 null.
+     * @return Null if saved successfully, or an error message string if saving failed.
      */
-    public void save(TaskList taskList, UserInterface ui) {
-        save(taskList.getAllTasks(), ui);
+    public String save(TaskList taskList, UserInterface ui) {
+        return save(taskList.getAllTasks(), ui);
     }
 
     /**
@@ -142,8 +143,9 @@ public class Storage {
      *
      * @param tasks The list of tasks to save.
      * @param ui    The UserInterface instance for reporting save errors, or null.
+     * @return Null if saved successfully, or an error message string if saving failed.
      */
-    public void save(ArrayList<Task> tasks, UserInterface ui) {
+    public String save(ArrayList<Task> tasks, UserInterface ui) {
         try {
             File file = filePath.toFile();
             // Create parent directories if they don't exist
@@ -156,10 +158,14 @@ public class Storage {
                     writer.println(task.toFileFormat());
                 }
             }
+
+            return null;
         } catch (IOException e) {
             if (ui != null) {
-                ui.showSavingError(e.getMessage());
+                return ui.showSavingError(e.getMessage());
             }
+
+            return null;
         }
     }
 
