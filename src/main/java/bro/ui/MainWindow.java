@@ -1,6 +1,10 @@
 package bro.ui;
 
 import bro.Bro;
+import bro.command.Command;
+import bro.parser.Parser;
+import javafx.animation.PauseTransition;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
@@ -8,6 +12,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.VBox;
+import javafx.util.Duration;
 
 /**
  * Controller for the main GUI.
@@ -57,5 +62,17 @@ public class MainWindow extends AnchorPane {
                 DialogBox.getBroDialog(response, broImage)
         );
         userInput.clear();
+
+        // Program should exit if the command is bye
+        if (Parser.parseCommand(input) == Command.BYE) {
+            userInput.setDisable(true);
+            sendButton.setDisable(true);
+
+            // 1 second delay to display Bro's response
+            PauseTransition delay = new PauseTransition(Duration.seconds(1.0));
+            delay.setOnFinished(event -> Platform.exit());
+
+            delay.play();
+        }
     }
 }
