@@ -200,4 +200,39 @@ public class ParserTest {
         assertThrows(BroException.class, () -> Parser.parseQueryDate(""));
         assertThrows(BroException.class, () -> Parser.parseQueryDate("invalid date"));
     }
+
+    // -------------------------------------------------------------------------
+    // parseFindKeywords tests
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void parseFindKeywords_singleKeyword_keywordReturned() throws BroException {
+        String[] result = Parser.parseFindKeywords("book");
+        assertArrayEquals(new String[] { "book" }, result);
+
+        String[] trimmedResult = Parser.parseFindKeywords("   read book   ");
+        assertArrayEquals(new String[] { "read book" }, trimmedResult);
+    }
+
+    @Test
+    public void parseFindKeywords_multipleCommaSeparatedKeywords_trimmedKeywordsReturned() throws BroException {
+        String[] result = Parser.parseFindKeywords("book, test, assignment");
+        assertArrayEquals(new String[] { "book", "test", "assignment" }, result);
+
+        String[] resultWithExtraSpaces = Parser.parseFindKeywords("  book  ,   test phrase  ,homework  ");
+        assertArrayEquals(new String[] { "book", "test phrase", "homework" }, resultWithExtraSpaces);
+    }
+
+    @Test
+    public void parseFindKeywords_nullOrEmptyInput_exceptionThrown() {
+        assertThrows(BroException.class, () -> Parser.parseFindKeywords(null));
+        assertThrows(BroException.class, () -> Parser.parseFindKeywords(""));
+        assertThrows(BroException.class, () -> Parser.parseFindKeywords("    "));
+    }
+
+    @Test
+    public void parseFindKeywords_onlyCommasAndSpaces_exceptionThrown() {
+        assertThrows(BroException.class, () -> Parser.parseFindKeywords(","));
+        assertThrows(BroException.class, () -> Parser.parseFindKeywords(" , ,   , "));
+    }
 }

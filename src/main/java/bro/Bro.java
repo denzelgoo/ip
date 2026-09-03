@@ -64,8 +64,8 @@ public class Bro {
                     return ui.showTaskList(tasks);
                 }
                 case FIND -> {
-                    // arguments will be the keywords to search for
-                    ArrayList<Task> matchingTasks = tasks.findTasksByKeywords(arguments);
+                    String[] keywords = Parser.parseFindKeywords(arguments);
+                    ArrayList<Task> matchingTasks = tasks.findTasksByKeywords(keywords);
                     return ui.showTasksContainingKeywords(arguments, matchingTasks);
                 }
                 case TASKS -> {
@@ -162,8 +162,8 @@ public class Bro {
                         ui.showTaskList(tasks);
                     }
                     case FIND -> {
-                        // arguments will be the keywords to search for
-                        ArrayList<Task> matchingTasks = tasks.findTasksByKeywords(arguments);
+                        String[] keywords = Parser.parseFindKeywords(arguments);
+                        ArrayList<Task> matchingTasks = tasks.findTasksByKeywords(keywords);
                         ui.showTasksContainingKeywords(arguments, matchingTasks);
                     }
                     case TASKS -> {
