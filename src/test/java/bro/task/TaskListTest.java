@@ -260,6 +260,37 @@ public class TaskListTest {
         assertEquals(todo, matchingTasks.get(0));
     }
 
+    @Test
+    public void findTasksByKeywords_multipleKeywords_matchingTasksReturned() {
+        TaskList taskList = new TaskList();
+        Todo todo1 = new Todo("read book");
+        Todo todo2 = new Todo("prepare for test");
+        Todo todo3 = new Todo("cook dinner");
+        taskList.add(todo1);
+        taskList.add(todo2);
+        taskList.add(todo3);
+
+        ArrayList<Task> matchingTasks = taskList.findTasksByKeywords("book", "test");
+        assertEquals(2, matchingTasks.size());
+        assertTrue(matchingTasks.contains(todo1));
+        assertTrue(matchingTasks.contains(todo2));
+        assertFalse(matchingTasks.contains(todo3));
+    }
+
+    @Test
+    public void findTasksByKeywords_nullOrEmptyVarargs_emptyListReturned() {
+        TaskList taskList = new TaskList();
+        taskList.add(new Todo("read book"));
+
+        ArrayList<Task> nullKeywords = taskList.findTasksByKeywords((String[]) null);
+        assertNotNull(nullKeywords);
+        assertTrue(nullKeywords.isEmpty());
+
+        ArrayList<Task> emptyVarargs = taskList.findTasksByKeywords();
+        assertNotNull(emptyVarargs);
+        assertTrue(emptyVarargs.isEmpty());
+    }
+
     // -------------------------------------------------------------------------
     // getAllTasks tests
     // -------------------------------------------------------------------------

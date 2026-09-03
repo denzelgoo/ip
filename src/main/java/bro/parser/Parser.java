@@ -1,6 +1,7 @@
 package bro.parser;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -128,5 +129,30 @@ public class Parser {
      */
     public static LocalDate parseQueryDate(String arguments) throws BroException {
         return TaskDateTime.parseQueryDate(arguments);
+    }
+
+    /**
+     * Parses the arguments for the find command into an array of keywords delimited by commas.
+     *
+     * @param arguments The raw arguments string containing comma-separated keywords.
+     * @return An array of trimmed, non-empty keyword strings.
+     * @throws BroException If arguments is null, empty, or contains only whitespace/commas.
+     */
+    public static String[] parseFindKeywords(String arguments) throws BroException {
+        if (arguments == null || arguments.trim().isEmpty()) {
+            throw new BroException("\tBro, what are you trying to find? Please provide some keywords.");
+        }
+        String[] rawKeywords = arguments.split(",");
+        ArrayList<String> validKeywords = new ArrayList<>();
+        for (String rawKeyword : rawKeywords) {
+            String trimmed = rawKeyword.trim();
+            if (!trimmed.isEmpty()) {
+                validKeywords.add(trimmed);
+            }
+        }
+        if (validKeywords.isEmpty()) {
+            throw new BroException("\tBro, what are you trying to find? Please provide some keywords.");
+        }
+        return validKeywords.toArray(new String[0]);
     }
 }

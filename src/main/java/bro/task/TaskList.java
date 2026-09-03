@@ -92,15 +92,18 @@ public class TaskList {
     }
 
     /**
-     * Finds and returns all tasks which contain the string keywords (case-insensitive).
+     * Finds and returns all tasks which contain any of the string keywords (case-insensitive).
      *
-     * @param keywords The keyword or keyword phrase to search for.
+     * @param keywords One or more keywords or keyword phrases to search for.
      * @return An ArrayList of matching Task objects.
      */
-    public ArrayList<Task> findTasksByKeywords(String keywords) {
+    public ArrayList<Task> findTasksByKeywords(String... keywords) {
         ArrayList<Task> matchingTasks = new ArrayList<>();
+        if (keywords == null || keywords.length == 0) {
+            return matchingTasks;
+        }
         for (Task task : this.tasks) {
-            if (task.containsKeywords(keywords.toLowerCase())) {
+            if (task.containsKeywords(keywords)) {
                 matchingTasks.add(task);
             }
         }
