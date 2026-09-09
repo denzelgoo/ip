@@ -57,51 +57,9 @@ public class Storage {
 
         try (Scanner fileScanner = new Scanner(file)) {
             while (fileScanner.hasNextLine()) {
-                String line = fileScanner.nextLine().trim();
-                if (line.startsWith("\uFEFF")) {
-                    line = line.substring(1).trim();
-                }
-                if (line.isEmpty()) {
-                    continue;
-                }
-
-                String[] parts = line.split(" \\| ");
-                if (parts.length < 3) {
-                    continue;
-                }
-
-                String taskType = parts[0];
-                boolean isDone = parts[1].equals("1");
-                String description = parts[2];
-
-                Task task = null;
-                try {
-                    task = switch (taskType) {
-                        case "T" -> new Todo(description);
-                        case "D" -> (parts.length >= 4) ? new Deadline(description, parts[3]) : null;
-                        case "E" -> {
-                            if (parts.length >= 5) {
-                                yield new Event(description, parts[3], parts[4]);
-                            } else if (parts.length == 4) {
-                                String[] times = parts[3].split(" /to | to | - | -|-", 2);
-                                if (times.length == 2) {
-                                    yield new Event(description, times[0], times[1]);
-                                }
-                                yield null;
-                            }
-                            yield null;
-                        }
-                        default -> null;
-                    };
-                } catch (BroException e) {
-                    // Skip tasks with corrupted/invalid date entries
-                    continue;
-                }
-
+                String line = fileScanner.nextLine();
+                Task task = decodeTask(line);
                 if (task != null) {
-                    if (isDone) {
-                        task.markDone();
-                    }
                     tasks.add(task);
                 }
             }
@@ -122,6 +80,100 @@ public class Storage {
      */
     public TaskList load() {
         return load(null);
+    }
+
+    /**
+     * Decodes a single formatted line from the storage file into a Task object.
+     * Returns null if the line is empty, corrupted, or cannot be parsed.
+     *
+     * @param rawLine The raw line read from the storage file.
+     * @return The constructed Task, or null if invalid or corrupted.
+     */
+    private Task decodeTask(String rawLine) {
+        String line = cleanLine(rawLine);
+        if (line.isEmpty()) {
+            return null;
+        }
+
+        String[] parts = line.split(" \\| ");
+        if (parts.length < 3) {
+            return null;
+        }
+
+        String taskType = parts[0];
+        boolean isDone = parts[1].equals("1");
+        String description = parts[2];
+
+        try {
+            Task task = switch (taskType) {
+                case "T" -> new Todo(description);
+                case "D" -> decodeDeadline(description, parts);
+                case "E" -> decodeEvent(description, parts);
+                default -> null;
+            };
+
+            if (task != null && isDone) {
+                task.markDone();
+            }
+            return task;
+        } catch (BroException e) {
+            // Skip tasks with corrupted or invalid date entries
+            return null;
+        }
+    }
+
+    /**
+     * Decodes a Deadline task from the tokenized parts of a storage line.
+     *
+     * @param description The task description.
+     * @param parts       The tokenized line parts.
+     * @return The Deadline task, or null if insufficient parts.
+     * @throws BroException If the deadline date string cannot be parsed.
+     */
+    private Deadline decodeDeadline(String description, String[] parts) throws BroException {
+        if (parts.length < 4) {
+            return null;
+        }
+        return new Deadline(description, parts[3]);
+    }
+
+    /**
+     * Decodes an Event task from the tokenized parts of a storage line.
+     * Supports both standard 5-part format and 4-part legacy format.
+     *
+     * @param description The task description.
+     * @param parts       The tokenized line parts.
+     * @return The Event task, or null if insufficient parts or unparseable legacy format.
+     * @throws BroException If the event dates cannot be parsed.
+     */
+    private Event decodeEvent(String description, String[] parts) throws BroException {
+        if (parts.length >= 5) {
+            return new Event(description, parts[3], parts[4]);
+        }
+        if (parts.length == 4) {
+            String[] times = parts[3].split(" /to | to | - | -|-", 2);
+            if (times.length == 2) {
+                return new Event(description, times[0], times[1]);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Cleans a raw storage line by stripping UTF-8 BOM characters and leading/trailing whitespace.
+     *
+     * @param rawLine The raw line from the storage file.
+     * @return The sanitized line string.
+     */
+    private String cleanLine(String rawLine) {
+        if (rawLine == null) {
+            return "";
+        }
+        String line = rawLine.trim();
+        if (line.startsWith("\uFEFF")) {
+            line = line.substring(1).trim();
+        }
+        return line;
     }
 
     /**
