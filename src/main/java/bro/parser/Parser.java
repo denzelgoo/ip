@@ -27,7 +27,11 @@ public class Parser {
             return Command.UNKNOWN;
         }
         String[] parts = fullCommand.trim().split(" ", 2);
-        return Command.fromString(parts[0]);
+        Command command = Command.fromString(parts[0]);
+
+        assert command != null : "Command.fromString should never return null";
+
+        return command;
     }
 
     /**
@@ -91,6 +95,10 @@ public class Parser {
             throw new BroException("\t"
                     + "I think you forgot to add the deadline bro, write 'deadline [task] /by [deadline]'");
         }
+
+        assert details.length == 2 && !details[0].isBlank() && !details[1].isBlank()
+                : "Deadline details array must contain exactly 2 non-blank parts";
+
         return new String[] { details[0].trim(), details[1].trim() };
     }
 
@@ -153,6 +161,10 @@ public class Parser {
         if (validKeywords.isEmpty()) {
             throw new BroException("\tBro, what are you trying to find? Please provide some keywords.");
         }
+
+        // validKeywords should not be empty if no exception was thrown
+        assert validKeywords.size() > 0 : "Parsed keywords list should have at least 1 keyword";
+
         return validKeywords.toArray(new String[0]);
     }
 }

@@ -33,7 +33,7 @@ public class TaskList {
      */
     public void add(Task task) {
         assert task != null : "Cannot add a null task to TaskList";
-        
+
         int previousSize = this.tasks.size();
         this.tasks.add(task);
 
@@ -53,7 +53,7 @@ public class TaskList {
 
         assert removed != null : "Deleted task should not be null";
         assert this.tasks.size() == previousSize - 1 : "TaskList size should decrement by 1 after delete";
-        
+
         return removed;
     }
 
