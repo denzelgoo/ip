@@ -124,6 +124,8 @@ public class Bro {
                     throw new BroException("\tI don't get what you're trying to say bro, can you try again?");
                 }
                 default -> {
+                    // Since unhandled commands should fall into the UNKNOWN case, execution should never reach this point
+                    assert false : "Unhandled command type: " + command;
                     throw new BroException("\tI don't get what you're trying to say bro, can you try again?");
                 }
             }
