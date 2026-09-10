@@ -6,27 +6,27 @@ import java.time.LocalDate;
  * Abstract representation of a task in the Bro application.
  */
 public abstract class Task {
-    protected final String task;
-    protected boolean isDone;
+    private final String description;
+    private boolean isDone;
 
     /**
      * Constructs a new Task with the specified description, initially not done.
      *
-     * @param task The description of the task.
+     * @param description The description of the task.
      */
-    public Task(String task) {
-        this.task = task;
+    public Task(String description) {
+        this.description = description;
         this.isDone = false;
     }
 
     /**
      * Constructs a new Task with the specified description and completion status.
      *
-     * @param task   The description of the task.
-     * @param isDone The initial completion status.
+     * @param description The description of the task.
+     * @param isDone      The initial completion status.
      */
-    public Task(String task, boolean isDone) {
-        this.task = task;
+    public Task(String description, boolean isDone) {
+        this.description = description;
         this.isDone = isDone;
     }
 
@@ -64,30 +64,52 @@ public abstract class Task {
         if (keywords == null || keywords.length == 0) {
             return false;
         }
-        String lowerTask = this.task.toLowerCase();
+        String lowerDescription = this.description.toLowerCase();
         for (String keyword : keywords) {
-            if (keyword != null && !keyword.trim().isEmpty() && lowerTask.contains(keyword.trim().toLowerCase())) {
+            if (keyword != null && !keyword.trim().isEmpty()
+                    && lowerDescription.contains(keyword.trim().toLowerCase())) {
                 return true;
             }
         }
         return false;
     }
 
+    /**
+     * Returns the description of the task.
+     *
+     * @return The task description.
+     */
+    public String getDescription() {
+        return this.description;
+    }
+
+    /**
+     * Returns the description of the task (alias for {@link #getDescription()}).
+     *
+     * @return The task description.
+     */
+    public String getTask() {
+        return getDescription();
+    }
+
+    /**
+     * Formats the common file record prefix containing the task type code,
+     * completion status flag, and description.
+     *
+     * @param typeTag The 1-letter task type code (e.g., "T", "D", "E").
+     * @return The formatted file prefix string.
+     */
+    protected String formatFilePrefix(String typeTag) {
+        return typeTag + " | " + (this.isDone ? "1" : "0") + " | " + this.description;
+    }
+
     @Override
     public String toString() {
         if (this.isDone) {
-            return String.format("[X] %s", this.task);
+            return String.format("[X] %s", this.description);
         } else {
-            return String.format("[ ] %s", this.task);
+            return String.format("[ ] %s", this.description);
         }
-    }
-
-    public String getStatusIcon() {
-        return (isDone ? "1" : "0");
-    }
-
-    public String getTask() {
-        return this.task;
     }
 
     /**
