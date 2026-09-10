@@ -120,5 +120,39 @@ public class DeadlineTest {
         assertTrue(deadline.containsKeywords("ASSIGNMENT"));
         assertFalse(deadline.containsKeywords("meeting"));
     }
+
+    @Test
+    public void setDescription_validDescription_descriptionUpdated() throws BroException {
+        Deadline deadline = new Deadline("submit report", "2026-09-15");
+        deadline.setDescription("submit final draft");
+        assertEquals("submit final draft", deadline.getDescription());
+        assertEquals("[D][ ] submit final draft (by: Sep 15 2026)", deadline.toString());
+        assertEquals("D | 0 | submit final draft | 2026-09-15", deadline.toFileFormat());
+    }
+
+    @Test
+    public void setDeadline_string_deadlineUpdated() throws BroException {
+        Deadline deadline = new Deadline("submit report", "2026-09-15");
+        deadline.setDeadline("2026-10-20 1800");
+        assertEquals("[D][ ] submit report (by: Oct 20 2026, 6:00PM)", deadline.toString());
+        assertEquals("D | 0 | submit report | 2026-10-20 1800", deadline.toFileFormat());
+        assertTrue(deadline.isOnDate(LocalDate.of(2026, 10, 20)));
+        assertFalse(deadline.isOnDate(LocalDate.of(2026, 9, 15)));
+    }
+
+    @Test
+    public void setDeadline_taskDateTime_deadlineUpdated() throws BroException {
+        Deadline deadline = new Deadline("submit report", "2026-09-15");
+        TaskDateTime newDt = TaskDateTime.parse("2026-12-01");
+        deadline.setDeadline(newDt);
+        assertEquals("[D][ ] submit report (by: Dec 01 2026)", deadline.toString());
+        assertTrue(deadline.isOnDate(LocalDate.of(2026, 12, 1)));
+    }
+
+    @Test
+    public void setDeadline_invalidString_exceptionThrown() throws BroException {
+        Deadline deadline = new Deadline("submit report", "2026-09-15");
+        assertThrows(BroException.class, () -> deadline.setDeadline(""));
+    }
 }
 

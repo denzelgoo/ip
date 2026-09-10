@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import bro.command.Command;
 import bro.exception.BroException;
 import bro.parser.DeadlineDetails;
+import bro.parser.EditDetails;
 import bro.parser.EventDetails;
 import bro.parser.ParsedInput;
 import bro.parser.Parser;
@@ -14,6 +15,7 @@ import bro.storage.Storage;
 import bro.task.Deadline;
 import bro.task.Event;
 import bro.task.Task;
+import bro.task.TaskDateTime;
 import bro.task.TaskList;
 import bro.task.Todo;
 import bro.ui.UserInterface;
@@ -102,6 +104,7 @@ public class Bro {
             case TODO -> executeAddTodo(arguments);
             case DEADLINE -> executeAddDeadline(arguments);
             case EVENT -> executeAddEvent(arguments);
+            case EDIT -> executeEdit(arguments);
             case UNKNOWN -> {
                 throw new BroException("I don't get what you're trying to say bro, can you try again?");
             }
@@ -217,6 +220,58 @@ public class Bro {
         Event newEvent = new Event(details.description(), details.start(), details.end());
         tasks.add(newEvent);
         return saveAndFormatResponse(ui.showTaskAdded(newEvent, tasks.size()));
+    }
+
+    /**
+     * Executes the edit command to update fields of an existing task.
+     *
+     * @param arguments The raw arguments string containing task index and edit flags.
+     * @return Confirmation message of the edited task, or storage error message if saving fails.
+     * @throws BroException If parsing fails or field flags are invalid for the target task type.
+     */
+    private String executeEdit(String arguments) throws BroException {
+        EditDetails details = Parser.parseEditDetails(arguments);
+        Task task = tasks.get(details.index());
+
+        if (task instanceof Todo) {
+            if (details.hasBy()) {
+                throw new BroException("Bro, a todo task doesn't have a deadline (/by)!");
+            }
+            if (details.hasFrom() || details.hasTo()) {
+                throw new BroException("Bro, a todo task doesn't have start/end times (/from, /to)!");
+            }
+            if (details.hasDescription()) {
+                task.setDescription(details.description());
+            }
+        } else if (task instanceof Deadline deadline) {
+            if (details.hasFrom() || details.hasTo()) {
+                throw new BroException("Bro, a deadline task doesn't have start/end times (/from, /to)!");
+            }
+            TaskDateTime newDeadline = details.hasBy() ? TaskDateTime.parse(details.by()) : null;
+            if (details.hasDescription()) {
+                deadline.setDescription(details.description());
+            }
+            if (newDeadline != null) {
+                deadline.setDeadline(newDeadline);
+            }
+        } else if (task instanceof Event event) {
+            if (details.hasBy()) {
+                throw new BroException("Bro, an event task doesn't have a deadline (/by)! Use /from or /to.");
+            }
+            TaskDateTime newStart = details.hasFrom() ? TaskDateTime.parse(details.from()) : null;
+            TaskDateTime newEnd = details.hasTo() ? TaskDateTime.parse(details.to()) : null;
+            if (details.hasDescription()) {
+                event.setDescription(details.description());
+            }
+            if (newStart != null) {
+                event.setStart(newStart);
+            }
+            if (newEnd != null) {
+                event.setEnd(newEnd);
+            }
+        }
+
+        return saveAndFormatResponse(ui.showTaskEdited(task));
     }
 
     /**

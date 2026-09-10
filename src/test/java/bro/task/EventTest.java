@@ -134,5 +134,50 @@ public class EventTest {
         assertTrue(event.containsKeywords("2026"));
         assertFalse(event.containsKeywords("hackathon"));
     }
+
+    @Test
+    public void setDescription_validDescription_descriptionUpdated() throws BroException {
+        Event event = new Event("project meeting", "2026-08-28", "2026-08-30");
+        event.setDescription("team sync");
+        assertEquals("team sync", event.getDescription());
+        assertEquals("[E][ ] team sync (from: Aug 28 2026 to: Aug 30 2026)", event.toString());
+        assertEquals("E | 0 | team sync | 2026-08-28 | 2026-08-30", event.toFileFormat());
+    }
+
+    @Test
+    public void setStart_string_startUpdated() throws BroException {
+        Event event = new Event("project meeting", "2026-08-28", "2026-08-30");
+        event.setStart("2026-08-29");
+        assertFalse(event.isOnDate(LocalDate.of(2026, 8, 28)));
+        assertTrue(event.isOnDate(LocalDate.of(2026, 8, 29)));
+        assertEquals("[E][ ] project meeting (from: Aug 29 2026 to: Aug 30 2026)", event.toString());
+        assertEquals("E | 0 | project meeting | 2026-08-29 | 2026-08-30", event.toFileFormat());
+    }
+
+    @Test
+    public void setEnd_string_endUpdated() throws BroException {
+        Event event = new Event("project meeting", "2026-08-28", "2026-08-30");
+        event.setEnd("2026-09-02");
+        assertTrue(event.isOnDate(LocalDate.of(2026, 9, 1)));
+        assertEquals("[E][ ] project meeting (from: Aug 28 2026 to: Sep 02 2026)", event.toString());
+        assertEquals("E | 0 | project meeting | 2026-08-28 | 2026-09-02", event.toFileFormat());
+    }
+
+    @Test
+    public void setStartAndEnd_taskDateTime_timesUpdated() throws BroException {
+        Event event = new Event("project meeting", "2026-08-28", "2026-08-30");
+        event.setStart(TaskDateTime.parse("2026-09-10 1000"));
+        event.setEnd(TaskDateTime.parse("2026-09-10 1200"));
+        assertEquals("[E][ ] project meeting (from: Sep 10 2026, 10:00AM to: Sep 10 2026, 12:00PM)",
+                event.toString());
+        assertEquals("E | 0 | project meeting | 2026-09-10 1000 | 2026-09-10 1200", event.toFileFormat());
+    }
+
+    @Test
+    public void setStartAndEnd_invalidString_exceptionThrown() throws BroException {
+        Event event = new Event("project meeting", "2026-08-28", "2026-08-30");
+        assertThrows(BroException.class, () -> event.setStart(""));
+        assertThrows(BroException.class, () -> event.setEnd(""));
+    }
 }
 

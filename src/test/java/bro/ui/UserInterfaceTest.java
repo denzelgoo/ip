@@ -145,6 +145,15 @@ public class UserInterfaceTest {
     }
 
     @Test
+    public void showTaskEdited_validTask_returnsFormattedMessage() {
+        Task task = new Todo("buy groceries");
+        String result = ui.showTaskEdited(task);
+        String expected = "Gotchu bro, I've updated this task:\n"
+                + "  [T][ ] buy groceries";
+        assertEquals(expected, result);
+    }
+
+    @Test
     public void showTaskCount_variousSizes_correctPluralization() {
         assertEquals("Now you have 0 tasks in the list.", ui.showTaskCount(0));
         assertEquals("Now you have 1 task in the list.", ui.showTaskCount(1));

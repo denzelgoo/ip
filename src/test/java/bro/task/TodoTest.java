@@ -72,4 +72,24 @@ public class TodoTest {
         assertTrue(todo.containsKeywords("rEaD bOoK"));
         assertFalse(todo.containsKeywords("math"));
     }
+
+    @Test
+    public void setDescription_validDescription_descriptionUpdated() {
+        Todo todo = new Todo("initial description");
+        todo.setDescription("updated description");
+        assertEquals("updated description", todo.getDescription());
+        assertEquals("updated description", todo.getTask());
+        assertEquals("[T][ ] updated description", todo.toString());
+        assertEquals("T | 0 | updated description", todo.toFileFormat());
+    }
+
+    @Test
+    public void setDescription_completedTodo_preservesDoneStatus() {
+        Todo todo = new Todo("initial description");
+        todo.markDone();
+        todo.setDescription("updated description");
+        assertTrue(todo.isDone());
+        assertEquals("[T][X] updated description", todo.toString());
+        assertEquals("T | 1 | updated description", todo.toFileFormat());
+    }
 }

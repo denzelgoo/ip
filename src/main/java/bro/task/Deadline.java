@@ -9,7 +9,7 @@ import bro.exception.BroException;
  * The deadline date and time is parsed and stored as a TaskDateTime object.
  */
 public class Deadline extends Task {
-    private final TaskDateTime deadline;
+    private TaskDateTime deadline;
 
     /**
      * Constructs a Deadline task with a description and a date/time string.
@@ -42,6 +42,25 @@ public class Deadline extends Task {
      */
     public TaskDateTime getDeadline() {
         return this.deadline;
+    }
+
+    /**
+     * Sets the deadline date and time.
+     *
+     * @param deadline The new TaskDateTime instance.
+     */
+    public void setDeadline(TaskDateTime deadline) {
+        this.deadline = deadline;
+    }
+
+    /**
+     * Sets the deadline date and time from a date-time string.
+     *
+     * @param deadlineStr The date or date-time string for the deadline.
+     * @throws BroException If the date/time string cannot be parsed.
+     */
+    public void setDeadline(String deadlineStr) throws BroException {
+        this.deadline = TaskDateTime.parse(deadlineStr);
     }
 
     /**
