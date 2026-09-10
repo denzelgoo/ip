@@ -218,6 +218,16 @@ public class UserInterface {
     }
 
     /**
+     * Displays confirmation that a task was successfully edited.
+     *
+     * @param task The task that was edited.
+     * @return The confirmation message of the edited task.
+     */
+    public String showTaskEdited(Task task) {
+        return formatTaskAction("Gotchu bro, I've updated this task:", task);
+    }
+
+    /**
      * Displays the current count of tasks in the list.
      *
      * @param size The number of tasks in the list.

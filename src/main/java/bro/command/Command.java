@@ -13,6 +13,7 @@ public enum Command {
     TODO,
     DEADLINE,
     EVENT,
+    EDIT,
     BYE,
     UNKNOWN;
 

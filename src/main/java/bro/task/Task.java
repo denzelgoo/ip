@@ -6,7 +6,7 @@ import java.time.LocalDate;
  * Abstract representation of a task in the Bro application.
  */
 public abstract class Task {
-    private final String description;
+    private String description;
     private boolean isDone;
 
     /**
@@ -90,6 +90,15 @@ public abstract class Task {
      */
     public String getTask() {
         return getDescription();
+    }
+
+    /**
+     * Sets the description of the task.
+     *
+     * @param description The new description of the task.
+     */
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     /**

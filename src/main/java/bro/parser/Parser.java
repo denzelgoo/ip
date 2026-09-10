@@ -22,11 +22,21 @@ public class Parser {
             "I think you messed up the event format bro, write 'event [description] /from [start] /to [end]'";
     private static final String ERROR_EMPTY_FIND_KEYWORDS =
             "Bro, what are you trying to find? Please provide some keywords.";
+    private static final String ERROR_EMPTY_EDIT_INDEX =
+            "Bro, which task do you want to edit? (e.g. edit 1 /desc new description)";
+    private static final String ERROR_MISSING_EDIT_FLAGS =
+            "Bro, please specify what you want to edit using /desc, /by, /from, or /to!";
+    private static final String ERROR_EMPTY_EDIT_VALUE =
+            "Bro, you can't leave the edit value empty!";
+    private static final String ERROR_UNKNOWN_EDIT_FLAG =
+            "Bro, I didn't recognize that flag. Use /desc, /by, /from, or /to!";
 
     private static final Pattern DEADLINE_PATTERN = Pattern
             .compile("(?<description>.+?)\\s+/by\\s+(?<deadline>.+)");
     private static final Pattern EVENT_PATTERN = Pattern
             .compile("(?<description>.+?)\\s+/from\\s+(?<start>.+?)\\s+/to\\s+(?<end>.+)");
+    private static final Pattern EDIT_FLAG_PATTERN = Pattern
+            .compile("(?<=\\s)/(?<flag>desc|by|from|to)(?=\\s|$)");
 
     /**
      * Constructs a Parser instance.
@@ -219,5 +229,74 @@ public class Parser {
         assert validKeywords.size() > 0 : "Parsed keywords list should have at least 1 keyword";
 
         return validKeywords.toArray(new String[0]);
+    }
+
+    /**
+     * Parses the arguments for the edit command into an {@link EditDetails} record.
+     *
+     * @param arguments The raw arguments string containing task index and edit flags.
+     * @return The parsed EditDetails record.
+     * @throws BroException          If arguments are missing, no flags are provided, or flag values are empty.
+     * @throws NumberFormatException If the task index cannot be parsed as an integer.
+     */
+    public static EditDetails parseEditDetails(String arguments) throws BroException {
+        if (arguments == null || arguments.trim().isEmpty()) {
+            throw new BroException(ERROR_EMPTY_EDIT_INDEX);
+        }
+
+        String trimmed = arguments.trim();
+        String[] parts = trimmed.split("\\s+", 2);
+        int taskIndex = parseTaskIndex(parts[0], ERROR_EMPTY_EDIT_INDEX);
+
+        if (parts.length < 2 || parts[1].trim().isEmpty()) {
+            throw new BroException(ERROR_MISSING_EDIT_FLAGS);
+        }
+
+        String remaining = " " + parts[1].trim();
+        Matcher matcher = EDIT_FLAG_PATTERN.matcher(remaining);
+
+        ArrayList<Integer> matchStarts = new ArrayList<>();
+        ArrayList<Integer> matchEnds = new ArrayList<>();
+        ArrayList<String> flags = new ArrayList<>();
+
+        while (matcher.find()) {
+            matchStarts.add(matcher.start());
+            matchEnds.add(matcher.end());
+            flags.add(matcher.group("flag"));
+        }
+
+        if (flags.isEmpty()) {
+            throw new BroException(ERROR_MISSING_EDIT_FLAGS);
+        }
+
+        if (!remaining.substring(0, matchStarts.get(0)).trim().isEmpty()) {
+            throw new BroException(ERROR_UNKNOWN_EDIT_FLAG);
+        }
+
+        String newDescription = null;
+        String newBy = null;
+        String newFrom = null;
+        String newTo = null;
+
+        for (int i = 0; i < flags.size(); i++) {
+            String flag = flags.get(i);
+            int valStart = matchEnds.get(i);
+            int valEnd = (i + 1 < matchStarts.size()) ? matchStarts.get(i + 1) : remaining.length();
+            String value = remaining.substring(valStart, valEnd).trim();
+
+            if (value.isEmpty()) {
+                throw new BroException(ERROR_EMPTY_EDIT_VALUE);
+            }
+
+            switch (flag) {
+                case "desc" -> newDescription = value;
+                case "by" -> newBy = value;
+                case "from" -> newFrom = value;
+                case "to" -> newTo = value;
+                default -> { }
+            }
+        }
+
+        return new EditDetails(taskIndex, newDescription, newBy, newFrom, newTo);
     }
 }

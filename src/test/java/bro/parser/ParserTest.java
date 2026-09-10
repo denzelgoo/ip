@@ -2,8 +2,11 @@ package bro.parser;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
 
@@ -60,6 +63,7 @@ public class ParserTest {
         assertEquals(Command.MARK, Parser.parseCommand("mark 1"));
         assertEquals(Command.UNMARK, Parser.parseCommand("unmark 1"));
         assertEquals(Command.DELETE, Parser.parseCommand("delete 1"));
+        assertEquals(Command.EDIT, Parser.parseCommand("edit 1 /desc test"));
         assertEquals(Command.BYE, Parser.parseCommand("bye"));
     }
 
@@ -312,5 +316,99 @@ public class ParserTest {
 
         BroException findEmptyEx = assertThrows(BroException.class, () -> Parser.parseFindKeywords(""));
         assertEquals("Bro, what are you trying to find? Please provide some keywords.", findEmptyEx.getMessage());
+    }
+
+    // -------------------------------------------------------------------------
+    // parseEditDetails tests
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void parseEditDetails_singleDescriptionFlag_returnsExpectedDetails() throws BroException {
+        EditDetails details = Parser.parseEditDetails("1 /desc read book");
+        assertEquals(0, details.index());
+        assertEquals("read book", details.description());
+        assertNull(details.by());
+        assertNull(details.from());
+        assertNull(details.to());
+        assertTrue(details.hasDescription());
+        assertFalse(details.hasBy());
+        assertFalse(details.hasFrom());
+        assertFalse(details.hasTo());
+    }
+
+    @Test
+    public void parseEditDetails_singleByFlag_returnsExpectedDetails() throws BroException {
+        EditDetails details = Parser.parseEditDetails("2 /by 2026-10-15 1800");
+        assertEquals(1, details.index());
+        assertNull(details.description());
+        assertEquals("2026-10-15 1800", details.by());
+        assertNull(details.from());
+        assertNull(details.to());
+        assertTrue(details.hasBy());
+        assertFalse(details.hasDescription());
+    }
+
+    @Test
+    public void parseEditDetails_fromAndToFlags_returnsExpectedDetails() throws BroException {
+        EditDetails details = Parser.parseEditDetails("3 /from 2pm /to 4pm");
+        assertEquals(2, details.index());
+        assertNull(details.description());
+        assertNull(details.by());
+        assertEquals("2pm", details.from());
+        assertEquals("4pm", details.to());
+        assertTrue(details.hasFrom());
+        assertTrue(details.hasTo());
+    }
+
+    @Test
+    public void parseEditDetails_multipleFlagsAnyOrder_returnsExpectedDetails() throws BroException {
+        EditDetails details = Parser.parseEditDetails("5 /to 6pm /desc project meeting /from 4pm");
+        assertEquals(4, details.index());
+        assertEquals("project meeting", details.description());
+        assertEquals("4pm", details.from());
+        assertEquals("6pm", details.to());
+        assertNull(details.by());
+    }
+
+    @Test
+    public void parseEditDetails_slashInsideDescription_preservedCorrectly() throws BroException {
+        EditDetails details = Parser.parseEditDetails("1 /desc read chapter 1/2");
+        assertEquals("read chapter 1/2", details.description());
+    }
+
+    @Test
+    public void parseEditDetails_missingIndexOrEmpty_exceptionThrown() {
+        assertThrows(BroException.class, () -> Parser.parseEditDetails(null));
+        assertThrows(BroException.class, () -> Parser.parseEditDetails(""));
+        assertThrows(BroException.class, () -> Parser.parseEditDetails("   "));
+    }
+
+    @Test
+    public void parseEditDetails_missingFlags_exceptionThrown() {
+        assertThrows(BroException.class, () -> Parser.parseEditDetails("1"));
+        assertThrows(BroException.class, () -> Parser.parseEditDetails("1   "));
+    }
+
+    @Test
+    public void parseEditDetails_unknownFlagsOnly_exceptionThrown() {
+        assertThrows(BroException.class, () -> Parser.parseEditDetails("1 /unknown test"));
+        assertThrows(BroException.class, () -> Parser.parseEditDetails("1 test"));
+    }
+
+    @Test
+    public void parseEditDetails_emptyFlagValue_exceptionThrown() {
+        assertThrows(BroException.class, () -> Parser.parseEditDetails("1 /desc"));
+        assertThrows(BroException.class, () -> Parser.parseEditDetails("1 /desc   "));
+        assertThrows(BroException.class, () -> Parser.parseEditDetails("1 /desc /by tomorrow"));
+    }
+
+    @Test
+    public void parseEditDetails_unrecognizedPrefixBeforeFlags_exceptionThrown() {
+        assertThrows(BroException.class, () -> Parser.parseEditDetails("1 something /desc book"));
+    }
+
+    @Test
+    public void parseEditDetails_invalidIndexFormat_throwsNumberFormatException() {
+        assertThrows(NumberFormatException.class, () -> Parser.parseEditDetails("abc /desc new task"));
     }
 }

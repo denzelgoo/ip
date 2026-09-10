@@ -9,8 +9,8 @@ import bro.exception.BroException;
  * Start and end timestamps are parsed and stored as TaskDateTime objects.
  */
 public class Event extends Task {
-    private final TaskDateTime start;
-    private final TaskDateTime end;
+    private TaskDateTime start;
+    private TaskDateTime end;
 
     /**
      * Constructs an Event task with a description, start time, and end time.
@@ -58,12 +58,50 @@ public class Event extends Task {
     }
 
     /**
+     * Sets the start date and time.
+     *
+     * @param start The new TaskDateTime instance for start.
+     */
+    public void setStart(TaskDateTime start) {
+        this.start = start;
+    }
+
+    /**
+     * Sets the start date and time from a date-time string.
+     *
+     * @param startStr The date or date-time string for the start of the event.
+     * @throws BroException If the date/time string cannot be parsed.
+     */
+    public void setStart(String startStr) throws BroException {
+        this.start = TaskDateTime.parse(startStr);
+    }
+
+    /**
      * Gets the TaskDateTime end object.
      *
      * @return The TaskDateTime instance for end.
      */
     public TaskDateTime getEnd() {
         return this.end;
+    }
+
+    /**
+     * Sets the end date and time.
+     *
+     * @param end The new TaskDateTime instance for end.
+     */
+    public void setEnd(TaskDateTime end) {
+        this.end = end;
+    }
+
+    /**
+     * Sets the end date and time from a date-time string.
+     *
+     * @param endStr The date or date-time string for the end of the event.
+     * @throws BroException If the date/time string cannot be parsed.
+     */
+    public void setEnd(String endStr) throws BroException {
+        this.end = TaskDateTime.parse(endStr);
     }
 
     /**
