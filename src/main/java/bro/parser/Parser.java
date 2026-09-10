@@ -58,7 +58,11 @@ public class Parser {
      * @return The corresponding Command enum constant.
      */
     public static Command parseCommand(String fullCommand) {
-        return parse(fullCommand).command();
+        Command command = parse(fullCommand).command();
+
+        assert command != null : "Command.fromString should never return null";
+
+        return command;
     }
 
     /**
@@ -133,7 +137,12 @@ public class Parser {
      */
     public static String[] parseDeadlineArguments(String arguments) throws BroException {
         DeadlineDetails details = parseDeadlineDetails(arguments);
-        return new String[] { details.description(), details.deadline() };
+        String[] detailsArray = new String[] { details.description(), details.deadline() };
+
+        assert detailsArray.length == 2 && !detailsArray[0].isBlank() && !detailsArray[1].isBlank()
+                : "Deadline details array must contain exactly 2 non-blank parts";
+
+        return detailsArray;
     }
 
     /**
@@ -205,6 +214,10 @@ public class Parser {
         if (validKeywords.isEmpty()) {
             throw new BroException(ERROR_EMPTY_FIND_KEYWORDS);
         }
+
+        // validKeywords should not be empty if no exception was thrown
+        assert validKeywords.size() > 0 : "Parsed keywords list should have at least 1 keyword";
+
         return validKeywords.toArray(new String[0]);
     }
 }

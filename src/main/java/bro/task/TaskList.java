@@ -32,7 +32,12 @@ public class TaskList {
      * @param task The task to add.
      */
     public void add(Task task) {
+        assert task != null : "Cannot add a null task to TaskList";
+
+        int previousSize = this.tasks.size();
         this.tasks.add(task);
+
+        assert this.tasks.size() == previousSize + 1 : "TaskList size should increment by 1 after add";
     }
 
     /**
@@ -43,7 +48,13 @@ public class TaskList {
      * @throws IndexOutOfBoundsException If the index is out of range.
      */
     public Task delete(int index) {
-        return this.tasks.remove(index);
+        int previousSize = this.tasks.size();
+        Task removed = this.tasks.remove(index);
+
+        assert removed != null : "Deleted task should not be null";
+        assert this.tasks.size() == previousSize - 1 : "TaskList size should decrement by 1 after delete";
+
+        return removed;
     }
 
     /**
@@ -54,7 +65,12 @@ public class TaskList {
      * @throws IndexOutOfBoundsException If the index is out of range.
      */
     public Task get(int index) {
-        return this.tasks.get(index);
+        int previousSize = this.tasks.size();
+        Task task = this.tasks.get(index);
+
+        assert this.tasks.size() == previousSize : "TaskList size should not change after get";
+
+        return task;
     }
 
     /**

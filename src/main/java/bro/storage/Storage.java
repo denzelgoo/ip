@@ -207,6 +207,10 @@ public class Storage {
 
             try (PrintWriter writer = new PrintWriter(new FileWriter(file))) {
                 for (Task task : tasks) {
+                    assert task != null : "Tasks list should not contain null elements when saving";
+                    assert task.toFileFormat() != null && !task.toFileFormat().isEmpty()
+                            : "toFileFormat() must produce a valid non-empty string";
+
                     writer.println(task.toFileFormat());
                 }
             }
