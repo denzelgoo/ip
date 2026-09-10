@@ -10,10 +10,10 @@ public class Todo extends Task {
     /**
      * Constructs a Todo task with the specified description.
      *
-     * @param task The description of the todo task.
+     * @param description The description of the todo task.
      */
-    public Todo(String task) {
-        super(task);
+    public Todo(String description) {
+        super(description);
     }
 
     /**
@@ -26,7 +26,7 @@ public class Todo extends Task {
      */
     @Override
     public boolean isOnDate(LocalDate date) {
-        return !this.isDone;
+        return !isDone();
     }
 
     @Override
@@ -36,6 +36,6 @@ public class Todo extends Task {
 
     @Override
     public String toFileFormat() {
-        return "T | " + (this.isDone ? "1" : "0") + " | " + this.task;
+        return formatFilePrefix("T");
     }
 }

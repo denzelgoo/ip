@@ -14,12 +14,12 @@ public class Deadline extends Task {
     /**
      * Constructs a Deadline task with a description and a date/time string.
      *
-     * @param task        The description of the deadline task.
+     * @param description The description of the deadline task.
      * @param deadlineStr The date or date-time string for the deadline.
      * @throws BroException If the date/time string cannot be parsed.
      */
-    public Deadline(String task, String deadlineStr) throws BroException {
-        super(task);
+    public Deadline(String description, String deadlineStr) throws BroException {
+        super(description);
         this.deadline = TaskDateTime.parse(deadlineStr);
     }
 
@@ -63,6 +63,6 @@ public class Deadline extends Task {
      */
     @Override
     public String toFileFormat() {
-        return "D | " + (this.isDone ? "1" : "0") + " | " + this.task + " | " + this.deadline.formatFile();
+        return formatFilePrefix("D") + " | " + this.deadline.formatFile();
     }
 }
