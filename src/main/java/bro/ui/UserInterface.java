@@ -241,8 +241,9 @@ public class UserInterface {
      * @return The stripped error message string.
      */
     public String showError(String message) {
-        System.out.println(message);
-        return message.strip();
+        String trimmed = message.strip();
+        System.out.println("\t" + trimmed);
+        return trimmed;
     }
 
     /**

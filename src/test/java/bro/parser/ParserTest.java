@@ -24,6 +24,29 @@ public class ParserTest {
     }
 
     // -------------------------------------------------------------------------
+    // parse (ParsedInput) tests
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void parse_validCommands_correctParsedInputReturned() {
+        ParsedInput todoParsed = Parser.parse("todo read book");
+        assertEquals(Command.TODO, todoParsed.command());
+        assertEquals("read book", todoParsed.arguments());
+
+        ParsedInput listParsed = Parser.parse("list");
+        assertEquals(Command.LIST, listParsed.command());
+        assertEquals("", listParsed.arguments());
+
+        ParsedInput nullParsed = Parser.parse(null);
+        assertEquals(Command.UNKNOWN, nullParsed.command());
+        assertEquals("", nullParsed.arguments());
+
+        ParsedInput emptyParsed = Parser.parse("   ");
+        assertEquals(Command.UNKNOWN, emptyParsed.command());
+        assertEquals("", emptyParsed.arguments());
+    }
+
+    // -------------------------------------------------------------------------
     // parseCommand tests
     // -------------------------------------------------------------------------
 
@@ -118,6 +141,17 @@ public class ParserTest {
     // -------------------------------------------------------------------------
 
     @Test
+    public void parseDeadlineDetails_validArguments_recordReturned() throws BroException {
+        DeadlineDetails details = Parser.parseDeadlineDetails("return book /by 28/8/2026 1800");
+        assertEquals("return book", details.description());
+        assertEquals("28/8/2026 1800", details.deadline());
+
+        DeadlineDetails trimmedDetails = Parser.parseDeadlineDetails("   submit report    /by    2026-08-28   ");
+        assertEquals("submit report", trimmedDetails.description());
+        assertEquals("2026-08-28", trimmedDetails.deadline());
+    }
+
+    @Test
     public void parseDeadlineArguments_validArguments_detailsReturned() throws BroException {
         String[] result = Parser.parseDeadlineArguments("return book /by 28/8/2026 1800");
         assertArrayEquals(new String[] { "return book", "28/8/2026 1800" }, result);
@@ -149,8 +183,21 @@ public class ParserTest {
     }
 
     // -------------------------------------------------------------------------
-    // parseEventArguments tests
+    // parseEventArguments and parseEventDetails tests
     // -------------------------------------------------------------------------
+
+    @Test
+    public void parseEventDetails_validArguments_recordReturned() throws BroException {
+        EventDetails details = Parser.parseEventDetails("project meeting /from 28/8/2026 1400 /to 28/8/2026 1600");
+        assertEquals("project meeting", details.description());
+        assertEquals("28/8/2026 1400", details.start());
+        assertEquals("28/8/2026 1600", details.end());
+
+        EventDetails trimmedDetails = Parser.parseEventDetails("  orientation  /from  2026-08-28  /to  2026-08-29  ");
+        assertEquals("orientation", trimmedDetails.description());
+        assertEquals("2026-08-28", trimmedDetails.start());
+        assertEquals("2026-08-29", trimmedDetails.end());
+    }
 
     @Test
     public void parseEventArguments_validArguments_detailsReturned() throws BroException {
@@ -234,5 +281,36 @@ public class ParserTest {
     public void parseFindKeywords_onlyCommasAndSpaces_exceptionThrown() {
         assertThrows(BroException.class, () -> Parser.parseFindKeywords(","));
         assertThrows(BroException.class, () -> Parser.parseFindKeywords(" , ,   , "));
+    }
+
+    // -------------------------------------------------------------------------
+    // Exception message formatting tests (no UI tab characters)
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void parseExceptions_thrownMessages_containNoLeadingTab() {
+        BroException todoEx = assertThrows(BroException.class, () -> Parser.parseTodoDescription(""));
+        assertEquals("Sorry bro, you can't have an empty todo.", todoEx.getMessage());
+
+        BroException deadlineEmptyEx = assertThrows(BroException.class, () -> Parser.parseDeadlineArguments(""));
+        assertEquals("Sorry bro, you can't have an empty deadline.", deadlineEmptyEx.getMessage());
+
+        BroException deadlineFormatEx = assertThrows(BroException.class, () ->
+                Parser.parseDeadlineArguments("read book by tomorrow"));
+        assertEquals(
+                "I think you forgot to add the deadline bro, write 'deadline [description] /by [deadline]'",
+                deadlineFormatEx.getMessage());
+
+        BroException eventEmptyEx = assertThrows(BroException.class, () -> Parser.parseEventArguments(""));
+        assertEquals("Sorry bro, you can't have an empty event.", eventEmptyEx.getMessage());
+
+        BroException eventFormatEx = assertThrows(BroException.class, () ->
+                Parser.parseEventArguments("party /to 6pm"));
+        assertEquals(
+                "I think you messed up the event format bro, write 'event [description] /from [start] /to [end]'",
+                eventFormatEx.getMessage());
+
+        BroException findEmptyEx = assertThrows(BroException.class, () -> Parser.parseFindKeywords(""));
+        assertEquals("Bro, what are you trying to find? Please provide some keywords.", findEmptyEx.getMessage());
     }
 }

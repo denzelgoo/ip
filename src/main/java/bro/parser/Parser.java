@@ -13,8 +13,43 @@ import bro.task.TaskDateTime;
  * Handles parsing and interpreting raw user commands and arguments.
  */
 public class Parser {
+    private static final String ERROR_EMPTY_TODO = "Sorry bro, you can't have an empty todo.";
+    private static final String ERROR_EMPTY_DEADLINE = "Sorry bro, you can't have an empty deadline.";
+    private static final String ERROR_INVALID_DEADLINE_FORMAT =
+            "I think you forgot to add the deadline bro, write 'deadline [description] /by [deadline]'";
+    private static final String ERROR_EMPTY_EVENT = "Sorry bro, you can't have an empty event.";
+    private static final String ERROR_INVALID_EVENT_FORMAT =
+            "I think you messed up the event format bro, write 'event [description] /from [start] /to [end]'";
+    private static final String ERROR_EMPTY_FIND_KEYWORDS =
+            "Bro, what are you trying to find? Please provide some keywords.";
+
+    private static final Pattern DEADLINE_PATTERN = Pattern
+            .compile("(?<description>.+?)\\s+/by\\s+(?<deadline>.+)");
     private static final Pattern EVENT_PATTERN = Pattern
-            .compile("(?<task>.+?)\\s+/from\\s+(?<start>.+?)\\s+/to\\s+(?<end>.+)");
+            .compile("(?<description>.+?)\\s+/from\\s+(?<start>.+?)\\s+/to\\s+(?<end>.+)");
+
+    /**
+     * Constructs a Parser instance.
+     */
+    public Parser() {
+    }
+
+    /**
+     * Parses the raw input string into a {@link ParsedInput} containing both
+     * the Command type and the argument string in a single operation.
+     *
+     * @param fullCommand The raw input line entered by the user.
+     * @return A ParsedInput containing the Command and arguments.
+     */
+    public static ParsedInput parse(String fullCommand) {
+        if (fullCommand == null || fullCommand.trim().isEmpty()) {
+            return new ParsedInput(Command.UNKNOWN, "");
+        }
+        String[] parts = fullCommand.trim().split(" ", 2);
+        Command command = Command.fromString(parts[0]);
+        String arguments = parts.length > 1 ? parts[1].trim() : "";
+        return new ParsedInput(command, arguments);
+    }
 
     /**
      * Parses the raw input string to determine the Command type.
@@ -23,26 +58,17 @@ public class Parser {
      * @return The corresponding Command enum constant.
      */
     public static Command parseCommand(String fullCommand) {
-        if (fullCommand == null || fullCommand.trim().isEmpty()) {
-            return Command.UNKNOWN;
-        }
-        String[] parts = fullCommand.trim().split(" ", 2);
-        return Command.fromString(parts[0]);
+        return parse(fullCommand).command();
     }
 
     /**
      * Parses the raw input string to extract the arguments string.
      *
      * @param fullCommand The raw input line entered by the user.
-     * @return The argument string, or an empty string if no arguments were
-     *         provided.
+     * @return The argument string, or an empty string if no arguments were provided.
      */
     public static String parseArguments(String fullCommand) {
-        if (fullCommand == null || fullCommand.trim().isEmpty()) {
-            return "";
-        }
-        String[] parts = fullCommand.trim().split(" ", 2);
-        return parts.length > 1 ? parts[1].trim() : "";
+        return parse(fullCommand).arguments();
     }
 
     /**
@@ -70,9 +96,32 @@ public class Parser {
      */
     public static String parseTodoDescription(String arguments) throws BroException {
         if (arguments == null || arguments.trim().isEmpty()) {
-            throw new BroException("\tSorry bro, you can't have an empty todo.");
+            throw new BroException(ERROR_EMPTY_TODO);
         }
         return arguments.trim();
+    }
+
+    /**
+     * Parses arguments for a deadline task into a {@link DeadlineDetails} record.
+     *
+     * @param arguments The raw arguments string.
+     * @return A DeadlineDetails record containing description and deadline.
+     * @throws BroException If arguments is empty or the format is invalid.
+     */
+    public static DeadlineDetails parseDeadlineDetails(String arguments) throws BroException {
+        if (arguments == null || arguments.trim().isEmpty()) {
+            throw new BroException(ERROR_EMPTY_DEADLINE);
+        }
+        Matcher matcher = DEADLINE_PATTERN.matcher(arguments.trim());
+        if (!matcher.find()) {
+            throw new BroException(ERROR_INVALID_DEADLINE_FORMAT);
+        }
+        String description = matcher.group("description").trim();
+        String deadline = matcher.group("deadline").trim();
+        if (description.isEmpty() || deadline.isEmpty()) {
+            throw new BroException(ERROR_INVALID_DEADLINE_FORMAT);
+        }
+        return new DeadlineDetails(description, deadline);
     }
 
     /**
@@ -83,41 +132,44 @@ public class Parser {
      * @throws BroException If arguments is empty or the format is invalid.
      */
     public static String[] parseDeadlineArguments(String arguments) throws BroException {
-        if (arguments == null || arguments.trim().isEmpty()) {
-            throw new BroException("\tSorry bro, you can't have an empty deadline.");
-        }
-        String[] details = arguments.split(" /by ", 2);
-        if (details.length == 1 || details[0].isBlank() || details[1].isBlank()) {
-            throw new BroException("\t"
-                    + "I think you forgot to add the deadline bro, write 'deadline [task] /by [deadline]'");
-        }
-        return new String[] { details[0].trim(), details[1].trim() };
+        DeadlineDetails details = parseDeadlineDetails(arguments);
+        return new String[] { details.description(), details.deadline() };
     }
 
     /**
-     * Parses arguments for an event task into description, start date/time, and end
-     * date/time.
+     * Parses arguments for an event task into an {@link EventDetails} record.
+     *
+     * @param arguments The raw arguments string.
+     * @return An EventDetails record containing description, start, and end.
+     * @throws BroException If arguments is empty or the format does not match the event pattern.
+     */
+    public static EventDetails parseEventDetails(String arguments) throws BroException {
+        if (arguments == null || arguments.trim().isEmpty()) {
+            throw new BroException(ERROR_EMPTY_EVENT);
+        }
+        Matcher matcher = EVENT_PATTERN.matcher(arguments.trim());
+        if (!matcher.find()) {
+            throw new BroException(ERROR_INVALID_EVENT_FORMAT);
+        }
+        String description = matcher.group("description").trim();
+        String start = matcher.group("start").trim();
+        String end = matcher.group("end").trim();
+        if (description.isEmpty() || start.isEmpty() || end.isEmpty()) {
+            throw new BroException(ERROR_INVALID_EVENT_FORMAT);
+        }
+        return new EventDetails(description, start, end);
+    }
+
+    /**
+     * Parses arguments for an event task into description, start date/time, and end date/time.
      *
      * @param arguments The raw arguments string.
      * @return A 3-element array containing [description, startStr, endStr].
-     * @throws BroException If arguments is empty or the format does not match the
-     *                      event pattern.
+     * @throws BroException If arguments is empty or the format does not match the event pattern.
      */
     public static String[] parseEventArguments(String arguments) throws BroException {
-        if (arguments == null || arguments.trim().isEmpty()) {
-            throw new BroException("\tSorry bro, you can't have an empty event.");
-        }
-        Matcher matcher = EVENT_PATTERN.matcher(arguments.trim());
-        if (matcher.find()) {
-            return new String[] {
-                    matcher.group("task").trim(),
-                    matcher.group("start").trim(),
-                    matcher.group("end").trim()
-            };
-        } else {
-            throw new BroException("\t"
-                    + "I think you messed up the event format bro, write 'event [task] /from [start] /to [end]'");
-        }
+        EventDetails details = parseEventDetails(arguments);
+        return new String[] { details.description(), details.start(), details.end() };
     }
 
     /**
@@ -140,7 +192,7 @@ public class Parser {
      */
     public static String[] parseFindKeywords(String arguments) throws BroException {
         if (arguments == null || arguments.trim().isEmpty()) {
-            throw new BroException("\tBro, what are you trying to find? Please provide some keywords.");
+            throw new BroException(ERROR_EMPTY_FIND_KEYWORDS);
         }
         String[] rawKeywords = arguments.split(",");
         ArrayList<String> validKeywords = new ArrayList<>();
@@ -151,7 +203,7 @@ public class Parser {
             }
         }
         if (validKeywords.isEmpty()) {
-            throw new BroException("\tBro, what are you trying to find? Please provide some keywords.");
+            throw new BroException(ERROR_EMPTY_FIND_KEYWORDS);
         }
         return validKeywords.toArray(new String[0]);
     }
