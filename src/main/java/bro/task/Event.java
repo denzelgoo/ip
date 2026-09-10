@@ -15,13 +15,13 @@ public class Event extends Task {
     /**
      * Constructs an Event task with a description, start time, and end time.
      *
-     * @param task     The description of the event.
-     * @param startStr The date or date-time string for the start of the event.
-     * @param endStr   The date or date-time string for the end of the event.
+     * @param description The description of the event.
+     * @param startStr    The date or date-time string for the start of the event.
+     * @param endStr      The date or date-time string for the end of the event.
      * @throws BroException If either date/time string cannot be parsed.
      */
-    public Event(String task, String startStr, String endStr) throws BroException {
-        super(task);
+    public Event(String description, String startStr, String endStr) throws BroException {
+        super(description);
         this.start = TaskDateTime.parse(startStr);
         this.end = TaskDateTime.parse(endStr);
     }
@@ -85,7 +85,6 @@ public class Event extends Task {
      */
     @Override
     public String toFileFormat() {
-        return "E | " + (this.isDone ? "1" : "0") + " | " + this.task + " | "
-                + this.start.formatFile() + " | " + this.end.formatFile();
+        return formatFilePrefix("E") + " | " + this.start.formatFile() + " | " + this.end.formatFile();
     }
 }

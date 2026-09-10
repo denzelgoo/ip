@@ -86,15 +86,7 @@ public class UserInterface {
      * @return The formatted string representation of the task list.
      */
     public String showTaskList(TaskList tasks) {
-        String displayList = "Here are the tasks you have bro:";
-
-        System.out.println("\tHere are the tasks you have bro:");
-        for (int i = 0; i < tasks.size(); i++) {
-            displayList += "\n" + (i + 1) + ". " + tasks.get(i);
-            System.out.println("\t" + (i + 1) + ". " + tasks.get(i));
-        }
-
-        return displayList;
+        return showTaskList(tasks.getAllTasks());
     }
 
     /**
@@ -104,15 +96,28 @@ public class UserInterface {
      * @return The formatted string representation of the task list.
      */
     public String showTaskList(ArrayList<Task> tasks) {
-        String displayList = "Here are the tasks you have bro:";
+        return formatIndexedTaskList("Here are the tasks you have bro:", tasks);
+    }
 
-        System.out.println("\tHere are the tasks you have bro:");
+    /**
+     * Formats an indexed list of tasks under a specified header, prints them to the console,
+     * and returns the combined multi-line string.
+     *
+     * @param header The header message preceding the list of tasks.
+     * @param tasks  The list of tasks to format.
+     * @return The formatted multi-line task list string.
+     */
+    private String formatIndexedTaskList(String header, ArrayList<Task> tasks) {
+        StringBuilder builder = new StringBuilder(header);
+        System.out.println("\t" + header);
+
         for (int i = 0; i < tasks.size(); i++) {
-            displayList += "\n" + (i + 1) + ". " + tasks.get(i);
-            System.out.println("\t" + (i + 1) + ". " + tasks.get(i));
+            String taskLine = (i + 1) + ". " + tasks.get(i);
+            builder.append("\n").append(taskLine);
+            System.out.println("\t" + taskLine);
         }
 
-        return displayList;
+        return builder.toString();
     }
 
     /**
@@ -123,35 +128,25 @@ public class UserInterface {
      * @return The formatted string of tasks occurring on the queried date.
      */
     public String showTasksForDate(LocalDate targetDate, ArrayList<Task> matchingTasks) {
-        String displayList;
-
         String formattedDate = targetDate.format(DateTimeFormatter.ofPattern("MMM dd yyyy", Locale.ENGLISH));
         if (matchingTasks.isEmpty()) {
-            System.out.println("\tYou don't have any tasks for " + formattedDate + " bro!");
-            return "You don't have any tasks for " + formattedDate + " bro!";
-        } else {
-            displayList = "Here are the tasks happening on " + formattedDate + " bro:";
-            System.out.println("\tHere are the tasks happening on " + formattedDate + " bro:");
-            for (int i = 0; i < matchingTasks.size(); i++) {
-                displayList += "\n" + (i + 1) + ". " + matchingTasks.get(i);
-                System.out.println("\t" + (i + 1) + ". " + matchingTasks.get(i));
-            }
+            String message = "You don't have any tasks for " + formattedDate + " bro!";
+            System.out.println("\t" + message);
+            return message;
         }
 
-        return displayList;
+        String header = "Here are the tasks happening on " + formattedDate + " bro:";
+        return formatIndexedTaskList(header, matchingTasks);
     }
 
     /**
      * Displays tasks containing the string keywords.
      *
      * @param keywords      The keyword or keyword phrase queried by the user.
-     * @param matchingTasks The tasks matching or involving the queried
-     *                      keyword/keyword phrase.
+     * @param matchingTasks The tasks matching or involving the queried keyword/phrase.
      * @return The formatted string of tasks containing the keywords.
      */
     public String showTasksContainingKeywords(String keywords, ArrayList<Task> matchingTasks) {
-        String displayList;
-
         if (matchingTasks.isEmpty()) {
             String message = String.format(
                     "Sorry bro, I couldn't find any tasks containing '%s', "
@@ -159,18 +154,23 @@ public class UserInterface {
                     keywords);
             System.out.println("\t" + message);
             return message;
-        } else {
-            String message = String.format(
-                    "No problem bro, here are the tasks containing '%s':", keywords);
-            displayList = message;
-            System.out.println("\t" + message);
-            for (int i = 0; i < matchingTasks.size(); i++) {
-                displayList += "\n" + (i + 1) + ". " + matchingTasks.get(i);
-                System.out.println("\t" + (i + 1) + ". " + matchingTasks.get(i));
-            }
         }
 
-        return displayList;
+        String header = String.format("No problem bro, here are the tasks containing '%s':", keywords);
+        return formatIndexedTaskList(header, matchingTasks);
+    }
+
+    /**
+     * Formats and prints feedback for an action performed on a single task.
+     *
+     * @param header The action message header.
+     * @param task   The affected task.
+     * @return The formatted two-line action feedback string.
+     */
+    private String formatTaskAction(String header, Task task) {
+        System.out.println("\t" + header);
+        System.out.println("\t  " + task);
+        return header + "\n  " + task;
     }
 
     /**
@@ -181,12 +181,8 @@ public class UserInterface {
      * @return The confirmation message of the added task.
      */
     public String showTaskAdded(Task task, int totalSize) {
-        String msg = "I gotchu bro, added this task:\n\t  " + task;
-
-        System.out.println("\t" + msg);
-        msg += "\n" + showTaskCount(totalSize);
-
-        return msg;
+        String msg = formatTaskAction("I gotchu bro, added this task:", task);
+        return msg + "\n" + showTaskCount(totalSize);
     }
 
     /**
@@ -197,13 +193,8 @@ public class UserInterface {
      * @return The confirmation message of the deleted task.
      */
     public String showTaskDeleted(Task task, int totalSize) {
-        String msg = "No problem bro, I've removed this task:\n" + " " + task;
-
-        System.out.println("\tNo problem bro, I've removed this task:");
-        System.out.println("\t  " + task);
-        msg += "\n" + showTaskCount(totalSize);
-
-        return msg;
+        String msg = formatTaskAction("No problem bro, I've removed this task:", task);
+        return msg + "\n" + showTaskCount(totalSize);
     }
 
     /**
@@ -213,12 +204,7 @@ public class UserInterface {
      * @return The confirmation message of the marked task.
      */
     public String showTaskMarked(Task task) {
-        String msg = "Nice bro, I've marked this task as done for you:\n" + " " + task;
-
-        System.out.println("\tNice bro, I've marked this task as done for you:");
-        System.out.println("\t  " + task);
-
-        return msg;
+        return formatTaskAction("Nice bro, I've marked this task as done for you:", task);
     }
 
     /**
@@ -228,12 +214,7 @@ public class UserInterface {
      * @return The confirmation message of the unmarked task.
      */
     public String showTaskUnmarked(Task task) {
-        String msg = "That's tough bro, I've marked this task as not done yet:\n" + " " + task;
-
-        System.out.println("\tThat's tough bro, I've marked this task as not done yet:");
-        System.out.println("\t  " + task);
-
-        return msg;
+        return formatTaskAction("That's tough bro, I've marked this task as not done yet:", task);
     }
 
     /**
@@ -243,13 +224,14 @@ public class UserInterface {
      * @return The formatted task count message string.
      */
     public String showTaskCount(int size) {
-        if (size > 1 || size == 0) {
-            System.out.println("\tNow you have " + size + " tasks in the list.");
-            return "Now you have " + size + " tasks in the list.";
+        String countMessage;
+        if (size == 1) {
+            countMessage = "Now you have 1 task in the list.";
         } else {
-            System.out.println("\tNow you have " + size + " task in the list.");
-            return "Now you have " + size + " task in the list.";
+            countMessage = "Now you have " + size + " tasks in the list.";
         }
+        System.out.println("\t" + countMessage);
+        return countMessage;
     }
 
     /**
@@ -259,8 +241,9 @@ public class UserInterface {
      * @return The stripped error message string.
      */
     public String showError(String message) {
-        System.out.println(message);
-        return message.strip();
+        String trimmed = message.strip();
+        System.out.println("\t" + trimmed);
+        return trimmed;
     }
 
     /**
