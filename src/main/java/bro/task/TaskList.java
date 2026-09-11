@@ -2,6 +2,7 @@ package bro.task;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 /**
  * Represents and manages the list of tasks in the Bro application.
@@ -98,13 +99,9 @@ public class TaskList {
      * @return An ArrayList of matching Task objects.
      */
     public ArrayList<Task> findTasksOnDate(LocalDate date) {
-        ArrayList<Task> matchingTasks = new ArrayList<>();
-        for (Task task : this.tasks) {
-            if (task.isOnDate(date)) {
-                matchingTasks.add(task);
-            }
-        }
-        return matchingTasks;
+        return this.tasks.stream()
+                .filter(task -> task.isOnDate(date))
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     /**
@@ -114,16 +111,13 @@ public class TaskList {
      * @return An ArrayList of matching Task objects.
      */
     public ArrayList<Task> findTasksByKeywords(String... keywords) {
-        ArrayList<Task> matchingTasks = new ArrayList<>();
         if (keywords == null || keywords.length == 0) {
-            return matchingTasks;
+            return new ArrayList<>();
         }
-        for (Task task : this.tasks) {
-            if (task.containsKeywords(keywords)) {
-                matchingTasks.add(task);
-            }
-        }
-        return matchingTasks;
+
+        return this.tasks.stream()
+                .filter(task -> task.containsKeywords(keywords))
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     /**
