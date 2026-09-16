@@ -202,7 +202,7 @@ Updates the description, deadline, or event time frame of an existing task witho
     [D][ ] submit essay (by: Oct 16 2026, 11:59PM)
   ```
 
-  ![Edit Deadline](deadline.png)
+  ![Edit Deadline](edit.png)
 
 ---
 
