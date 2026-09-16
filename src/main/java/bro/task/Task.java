@@ -121,6 +121,25 @@ public abstract class Task {
         }
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        Task other = (Task) obj;
+        return this.description != null && this.description.trim().equalsIgnoreCase(
+                other.description == null ? null : other.description.trim());
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(getClass(),
+                description == null ? null : description.trim().toLowerCase());
+    }
+
     /**
      * Formats the task into a pipe-delimited string for text file storage.
      *

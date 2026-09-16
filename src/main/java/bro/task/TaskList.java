@@ -121,6 +121,35 @@ public class TaskList {
     }
 
     /**
+     * Checks if an equivalent task already exists in the task list.
+     *
+     * @param task The task to check for duplicates.
+     * @return True if a duplicate exists, false otherwise.
+     */
+    public boolean hasDuplicate(Task task) {
+        if (task == null) {
+            return false;
+        }
+        return this.tasks.stream().anyMatch(existing -> existing.equals(task));
+    }
+
+    /**
+     * Returns the existing duplicate task from the list, or null if none exists.
+     *
+     * @param task The task to find duplicates for.
+     * @return The existing duplicate Task, or null.
+     */
+    public Task getDuplicate(Task task) {
+        if (task == null) {
+            return null;
+        }
+        return this.tasks.stream()
+                .filter(existing -> existing.equals(task))
+                .findFirst()
+                .orElse(null);
+    }
+
+    /**
      * Returns the underlying list of tasks.
      *
      * @return An ArrayList containing all tasks.

@@ -130,7 +130,7 @@ public class UserInterface {
     public String showTasksForDate(LocalDate targetDate, ArrayList<Task> matchingTasks) {
         String formattedDate = targetDate.format(DateTimeFormatter.ofPattern("MMM dd yyyy", Locale.ENGLISH));
         if (matchingTasks.isEmpty()) {
-            String message = "You don't have any tasks for " + formattedDate + " bro!";
+            String message = "You don't have any tasks for " + formattedDate + " bro.";
             System.out.println("\t" + message);
             return message;
         }
@@ -208,6 +208,16 @@ public class UserInterface {
     }
 
     /**
+     * Displays a notice that a task was already marked as done.
+     *
+     * @param task The task that is already marked.
+     * @return The notice message.
+     */
+    public String showTaskAlreadyMarked(Task task) {
+        return formatTaskAction("Bro, that task is already marked as done:", task);
+    }
+
+    /**
      * Displays confirmation that a task was unmarked as not done.
      *
      * @param task The unmarked task.
@@ -218,6 +228,16 @@ public class UserInterface {
     }
 
     /**
+     * Displays a notice that a task was already unmarked as not done.
+     *
+     * @param task The task that is already unmarked.
+     * @return The notice message.
+     */
+    public String showTaskAlreadyUnmarked(Task task) {
+        return formatTaskAction("Bro, that task isn't marked as done yet anyway:", task);
+    }
+
+    /**
      * Displays confirmation that a task was successfully edited.
      *
      * @param task The task that was edited.
@@ -225,6 +245,16 @@ public class UserInterface {
      */
     public String showTaskEdited(Task task) {
         return formatTaskAction("Gotchu bro, I've updated this task:", task);
+    }
+
+    /**
+     * Displays a warning that an identical task already exists in the list.
+     *
+     * @param existingTask The existing task that is identical.
+     * @return The duplicate warning message.
+     */
+    public String showDuplicateTaskWarning(Task existingTask) {
+        return formatTaskAction("Bro, you already have that exact task in your list:", existingTask);
     }
 
     /**
@@ -262,8 +292,9 @@ public class UserInterface {
      * @return The invalid task number error message string.
      */
     public String showInvalidTaskNumberError() {
-        System.out.println("\tBro...please enter a valid task number.");
-        return "Bro...please enter a valid task number.";
+        String message = "Bro, please enter a valid task number.";
+        System.out.println("\t" + message);
+        return message;
     }
 
     /**
@@ -272,8 +303,31 @@ public class UserInterface {
      * @return The non-existent task error message string.
      */
     public String showNoSuchTaskError() {
-        System.out.println("\tUhh...that item doesn't exist in your list bro.");
-        return "Uhh...that item doesn't exist in your list bro.";
+        String message = "Uhh, that task doesn't exist in your list bro.";
+        System.out.println("\t" + message);
+        return message;
+    }
+
+    /**
+     * Displays a helpful error message when the selected task index is out of bounds.
+     *
+     * @param attemptedIndex The 1-based index the user tried to access.
+     * @param currentSize    The current number of tasks in the list.
+     * @return The contextual error message string.
+     */
+    public String showNoSuchTaskError(int attemptedIndex, int currentSize) {
+        String message;
+        if (currentSize == 0) {
+            message = String.format("Bro, your list is completely empty right now, so there's no task %d.",
+                    attemptedIndex);
+        } else {
+            String unit = currentSize == 1 ? "task" : "tasks";
+            message = String.format(
+                    "Bro, task %d doesn't exist. You have %d %s, so pick a number between 1 and %d.",
+                    attemptedIndex, currentSize, unit, currentSize);
+        }
+        System.out.println("\t" + message);
+        return message;
     }
 
     /**

@@ -21,6 +21,7 @@ import bro.ui.UserInterface;
  */
 public class Storage {
     private final Path filePath;
+    private int corruptedLineCount = 0;
 
     /**
      * Constructs a Storage instance targeting the specified Path.
@@ -49,6 +50,7 @@ public class Storage {
      * @return A TaskList containing the loaded Task objects.
      */
     public TaskList load(UserInterface ui) {
+        corruptedLineCount = 0;
         ArrayList<Task> tasks = new ArrayList<>();
         File file = filePath.toFile();
         if (!file.exists()) {
@@ -58,15 +60,25 @@ public class Storage {
         try (Scanner fileScanner = new Scanner(file)) {
             while (fileScanner.hasNextLine()) {
                 String line = fileScanner.nextLine();
+                if (cleanLine(line).isEmpty()) {
+                    continue;
+                }
                 Task task = decodeTask(line);
                 if (task != null) {
                     tasks.add(task);
+                } else {
+                    corruptedLineCount++;
                 }
             }
         } catch (IOException e) {
             if (ui != null) {
                 ui.showLoadingError(e.getMessage());
             }
+        }
+
+        if (corruptedLineCount > 0 && ui != null) {
+            ui.showError(String.format("Heads up bro, skipped %d corrupted line(s) in your save file.",
+                    corruptedLineCount));
         }
 
         return new TaskList(tasks);
@@ -80,6 +92,15 @@ public class Storage {
      */
     public TaskList load() {
         return load(null);
+    }
+
+    /**
+     * Returns the count of corrupted lines encountered during the most recent load operation.
+     *
+     * @return The number of corrupted lines skipped.
+     */
+    public int getCorruptedLineCount() {
+        return corruptedLineCount;
     }
 
     /**

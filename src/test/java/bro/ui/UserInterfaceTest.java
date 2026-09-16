@@ -72,7 +72,7 @@ public class UserInterfaceTest {
     public void showTasksForDate_emptyList_returnsNoTasksMessage() {
         LocalDate date = LocalDate.of(2026, 10, 15);
         String result = ui.showTasksForDate(date, new ArrayList<>());
-        assertEquals("You don't have any tasks for Oct 15 2026 bro!", result);
+        assertEquals("You don't have any tasks for Oct 15 2026 bro.", result);
     }
 
     @Test
@@ -136,6 +136,16 @@ public class UserInterfaceTest {
     }
 
     @Test
+    public void showTaskAlreadyMarked_validTask_returnsAlreadyMarkedMessage() {
+        Task task = new Todo("wash dishes");
+        task.markDone();
+        String result = ui.showTaskAlreadyMarked(task);
+        String expected = "Bro, that task is already marked as done:\n"
+                + "  [T][X] wash dishes";
+        assertEquals(expected, result);
+    }
+
+    @Test
     public void showTaskUnmarked_validTask_returnsUnmarkedMessage() {
         Task task = new Todo("wash dishes");
         String result = ui.showTaskUnmarked(task);
@@ -145,10 +155,28 @@ public class UserInterfaceTest {
     }
 
     @Test
+    public void showTaskAlreadyUnmarked_validTask_returnsAlreadyUnmarkedMessage() {
+        Task task = new Todo("wash dishes");
+        String result = ui.showTaskAlreadyUnmarked(task);
+        String expected = "Bro, that task isn't marked as done yet anyway:\n"
+                + "  [T][ ] wash dishes";
+        assertEquals(expected, result);
+    }
+
+    @Test
     public void showTaskEdited_validTask_returnsFormattedMessage() {
         Task task = new Todo("buy groceries");
         String result = ui.showTaskEdited(task);
         String expected = "Gotchu bro, I've updated this task:\n"
+                + "  [T][ ] buy groceries";
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void showDuplicateTaskWarning_validTask_returnsFormattedMessage() {
+        Task task = new Todo("buy groceries");
+        String result = ui.showDuplicateTaskWarning(task);
+        String expected = "Bro, you already have that exact task in your list:\n"
                 + "  [T][ ] buy groceries";
         assertEquals(expected, result);
     }
@@ -168,8 +196,14 @@ public class UserInterfaceTest {
 
     @Test
     public void showSpecificErrors_returnsExpectedMessages() {
-        assertEquals("Bro...please enter a valid task number.", ui.showInvalidTaskNumberError());
-        assertEquals("Uhh...that item doesn't exist in your list bro.", ui.showNoSuchTaskError());
+        assertEquals("Bro, please enter a valid task number.", ui.showInvalidTaskNumberError());
+        assertEquals("Uhh, that task doesn't exist in your list bro.", ui.showNoSuchTaskError());
+        assertEquals("Bro, your list is completely empty right now, so there's no task 1.",
+                ui.showNoSuchTaskError(1, 0));
+        assertEquals("Bro, task 3 doesn't exist. You have 2 tasks, so pick a number between 1 and 2.",
+                ui.showNoSuchTaskError(3, 2));
+        assertEquals("Bro, task 2 doesn't exist. You have 1 task, so pick a number between 1 and 1.",
+                ui.showNoSuchTaskError(2, 1));
         assertTrue(ui.showLoadingError("corrupted")
                 .contains("Oops, couldn't load tasks from file bro: corrupted"));
         assertTrue(ui.showSavingError("permission denied")

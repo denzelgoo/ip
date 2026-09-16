@@ -2,6 +2,7 @@ package bro.parser;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -13,23 +14,35 @@ import bro.task.TaskDateTime;
  * Handles parsing and interpreting raw user commands and arguments.
  */
 public class Parser {
-    private static final String ERROR_EMPTY_TODO = "Sorry bro, you can't have an empty todo.";
-    private static final String ERROR_EMPTY_DEADLINE = "Sorry bro, you can't have an empty deadline.";
+    private static final String ERROR_EMPTY_TODO =
+            "Sorry bro, you can't have an empty todo.\nFormat: todo <description> (e.g. todo read book)";
+    private static final String ERROR_EMPTY_DEADLINE =
+            "Sorry bro, you can't have an empty deadline.\n"
+                    + "Format: deadline <description> /by <deadline> "
+                    + "(e.g. deadline return book /by 2026-10-15 1800)";
     private static final String ERROR_INVALID_DEADLINE_FORMAT =
-            "I think you forgot to add the deadline bro, write 'deadline [description] /by [deadline]'";
-    private static final String ERROR_EMPTY_EVENT = "Sorry bro, you can't have an empty event.";
+            "I think you forgot to add the deadline bro.\n"
+                    + "Format: deadline <description> /by <deadline> "
+                    + "(e.g. deadline return book /by 2026-10-15 1800)";
+    private static final String ERROR_EMPTY_EVENT =
+            "Sorry bro, you can't have an empty event.\n"
+                    + "Format: event <description> /from <start> /to <end> "
+                    + "(e.g. event camp /from 2026-10-10 /to 2026-10-12)";
     private static final String ERROR_INVALID_EVENT_FORMAT =
-            "I think you messed up the event format bro, write 'event [description] /from [start] /to [end]'";
+            "I think you messed up the event format bro.\n"
+                    + "Format: event <description> /from <start> /to <end> "
+                    + "(e.g. event camp /from 2026-10-10 /to 2026-10-12)";
     private static final String ERROR_EMPTY_FIND_KEYWORDS =
-            "Bro, what are you trying to find? Please provide some keywords.";
+            "Bro, what are you trying to find? Please provide some keywords.\n"
+                    + "Format: find <keyword1>, <keyword2> (e.g. find book, project)";
     private static final String ERROR_EMPTY_EDIT_INDEX =
-            "Bro, which task do you want to edit? (e.g. edit 1 /desc new description)";
+            "Bro, which task do you want to edit?\nFormat: edit <number> /desc <new description>";
     private static final String ERROR_MISSING_EDIT_FLAGS =
-            "Bro, please specify what you want to edit using /desc, /by, /from, or /to!";
+            "Bro, please specify what you want to edit using /desc, /by, /from, or /to.";
     private static final String ERROR_EMPTY_EDIT_VALUE =
-            "Bro, you can't leave the edit value empty!";
+            "Bro, you can't leave the edit value empty.";
     private static final String ERROR_UNKNOWN_EDIT_FLAG =
-            "Bro, I didn't recognize that flag. Use /desc, /by, /from, or /to!";
+            "Bro, I didn't recognize that flag. Use /desc, /by, /from, or /to.";
 
     private static final Pattern DEADLINE_PATTERN = Pattern
             .compile("(?<description>.+?)\\s+/by\\s+(?<deadline>.+)");
@@ -37,6 +50,12 @@ public class Parser {
             .compile("(?<description>.+?)\\s+/from\\s+(?<start>.+?)\\s+/to\\s+(?<end>.+)");
     private static final Pattern EDIT_FLAG_PATTERN = Pattern
             .compile("(?<=\\s)/(?<flag>desc|by|from|to)(?=\\s|$)");
+    private static final Pattern BY_FLAG_PATTERN = Pattern
+            .compile("(?<=\\s)/by(?=\\s|$)");
+    private static final Pattern FROM_FLAG_PATTERN = Pattern
+            .compile("(?<=\\s)/from(?=\\s|$)");
+    private static final Pattern TO_FLAG_PATTERN = Pattern
+            .compile("(?<=\\s)/to(?=\\s|$)");
 
     /**
      * Constructs a Parser instance.
@@ -102,17 +121,38 @@ public class Parser {
     }
 
     /**
+     * Validates that the input string does not contain storage delimiters or newlines.
+     *
+     * @param input The string to validate.
+     * @throws BroException If input contains '|', '\n', or '\r'.
+     */
+    private static void validateNoDelimiterOrNewline(String input) throws BroException {
+        if (input == null) {
+            return;
+        }
+        if (input.contains("|")) {
+            throw new BroException("Bro, task descriptions and dates can't have the '|' character "
+                    + "because that's how I save your tasks.");
+        }
+        if (input.contains("\n") || input.contains("\r")) {
+            throw new BroException("Bro, task descriptions and dates can't have newline characters.");
+        }
+    }
+
+    /**
      * Parses arguments for a todo task.
      *
      * @param arguments The description argument.
      * @return The trimmed description string.
-     * @throws BroException If arguments is empty.
+     * @throws BroException If arguments is empty or contains invalid characters.
      */
     public static String parseTodoDescription(String arguments) throws BroException {
         if (arguments == null || arguments.trim().isEmpty()) {
             throw new BroException(ERROR_EMPTY_TODO);
         }
-        return arguments.trim();
+        String description = arguments.trim();
+        validateNoDelimiterOrNewline(description);
+        return description;
     }
 
     /**
@@ -120,13 +160,26 @@ public class Parser {
      *
      * @param arguments The raw arguments string.
      * @return A DeadlineDetails record containing description and deadline.
-     * @throws BroException If arguments is empty or the format is invalid.
+     * @throws BroException If arguments is empty, the format is invalid, or contains duplicate flags.
      */
     public static DeadlineDetails parseDeadlineDetails(String arguments) throws BroException {
         if (arguments == null || arguments.trim().isEmpty()) {
             throw new BroException(ERROR_EMPTY_DEADLINE);
         }
-        Matcher matcher = DEADLINE_PATTERN.matcher(arguments.trim());
+        String trimmed = arguments.trim();
+        validateNoDelimiterOrNewline(trimmed);
+
+        Matcher byFlagMatcher = BY_FLAG_PATTERN.matcher(" " + trimmed);
+        int byCount = 0;
+        while (byFlagMatcher.find()) {
+            byCount++;
+        }
+        if (byCount > 1) {
+            throw new BroException("Bro, you specified the '/by' flag more than once, you only need one.\n"
+                    + "Format: deadline <description> /by <deadline>");
+        }
+
+        Matcher matcher = DEADLINE_PATTERN.matcher(trimmed);
         if (!matcher.find()) {
             throw new BroException(ERROR_INVALID_DEADLINE_FORMAT);
         }
@@ -160,13 +213,36 @@ public class Parser {
      *
      * @param arguments The raw arguments string.
      * @return An EventDetails record containing description, start, and end.
-     * @throws BroException If arguments is empty or the format does not match the event pattern.
+     * @throws BroException If arguments is empty, the format is invalid, or contains duplicate flags.
      */
     public static EventDetails parseEventDetails(String arguments) throws BroException {
         if (arguments == null || arguments.trim().isEmpty()) {
             throw new BroException(ERROR_EMPTY_EVENT);
         }
-        Matcher matcher = EVENT_PATTERN.matcher(arguments.trim());
+        String trimmed = arguments.trim();
+        validateNoDelimiterOrNewline(trimmed);
+
+        Matcher fromFlagMatcher = FROM_FLAG_PATTERN.matcher(" " + trimmed);
+        int fromCount = 0;
+        while (fromFlagMatcher.find()) {
+            fromCount++;
+        }
+        if (fromCount > 1) {
+            throw new BroException("Bro, you specified the '/from' flag more than once, you only need one.\n"
+                    + "Format: event <description> /from <start> /to <end>");
+        }
+
+        Matcher toFlagMatcher = TO_FLAG_PATTERN.matcher(" " + trimmed);
+        int toCount = 0;
+        while (toFlagMatcher.find()) {
+            toCount++;
+        }
+        if (toCount > 1) {
+            throw new BroException("Bro, you specified the '/to' flag more than once, you only need one.\n"
+                    + "Format: event <description> /from <start> /to <end>");
+        }
+
+        Matcher matcher = EVENT_PATTERN.matcher(trimmed);
         if (!matcher.find()) {
             throw new BroException(ERROR_INVALID_EVENT_FORMAT);
         }
@@ -245,6 +321,8 @@ public class Parser {
         }
 
         String trimmed = arguments.trim();
+        validateNoDelimiterOrNewline(trimmed);
+
         String[] parts = trimmed.split("\\s+", 2);
         int taskIndex = parseTaskIndex(parts[0], ERROR_EMPTY_EDIT_INDEX);
 
@@ -278,8 +356,13 @@ public class Parser {
         String newFrom = null;
         String newTo = null;
 
+        HashSet<String> seenFlags = new HashSet<>();
         for (int i = 0; i < flags.size(); i++) {
             String flag = flags.get(i);
+            if (!seenFlags.add(flag)) {
+                throw new BroException(String.format(
+                        "Bro, you specified the '/%s' flag more than once, you only need one.", flag));
+            }
             int valStart = matchEnds.get(i);
             int valEnd = (i + 1 < matchStarts.size()) ? matchStarts.get(i + 1) : remaining.length();
             String value = remaining.substring(valStart, valEnd).trim();
