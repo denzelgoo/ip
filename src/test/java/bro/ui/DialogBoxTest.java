@@ -26,10 +26,11 @@ public class DialogBoxTest {
     }
 
     @Test
-    public void getUserDialog_validInput_createsDialogWithCircularClip() {
+    public void getUserDialog_validInput_createsDialogWithCircularClipAndUserStyle() {
         Image img = new Image(DialogBoxTest.class.getResourceAsStream("/images/DaUser.png"));
         DialogBox db = DialogBox.getUserDialog("Hello bro!", img);
         assertNotNull(db);
+        assertTrue(db.getStyleClass().contains("user-dialog"));
 
         ImageView displayPicture = (ImageView) db.getChildren().stream()
                 .filter(node -> node instanceof ImageView)
@@ -46,10 +47,11 @@ public class DialogBoxTest {
     }
 
     @Test
-    public void getBroDialog_validInput_createsFlippedDialogWithCircularClip() {
+    public void getBroDialog_validInput_createsFlippedDialogWithCircularClipAndBroStyle() {
         Image img = new Image(DialogBoxTest.class.getResourceAsStream("/images/DaBro.png"));
         DialogBox db = DialogBox.getBroDialog("What's up bro!", img);
         assertNotNull(db);
+        assertTrue(db.getStyleClass().contains("bro-dialog"));
 
         ImageView displayPicture = (ImageView) db.getChildren().stream()
                 .filter(node -> node instanceof ImageView)

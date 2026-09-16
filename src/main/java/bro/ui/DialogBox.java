@@ -20,6 +20,9 @@ import javafx.scene.shape.Circle;
  * and a label containing text from the speaker.
  */
 public class DialogBox extends HBox {
+    private static final String USER_STYLE_CLASS = "user-dialog";
+    private static final String BRO_STYLE_CLASS = "bro-dialog";
+
     @FXML
     private Label dialog;
     @FXML
@@ -82,18 +85,20 @@ public class DialogBox extends HBox {
     }
 
     /**
-     * Creates a dialog box for the user.
+     * Creates a dialog box for the user with user-specific speech bubble styling.
      *
      * @param text The user's input text.
      * @param img  The user's avatar image.
      * @return A DialogBox configured for the user.
      */
     public static DialogBox getUserDialog(String text, Image img) {
-        return new DialogBox(text, img);
+        DialogBox db = new DialogBox(text, img);
+        db.getStyleClass().add(USER_STYLE_CLASS);
+        return db;
     }
 
     /**
-     * Creates a dialog box for Bro's response with avatar on the left.
+     * Creates a dialog box for Bro's response with avatar on the left and bot speech bubble styling.
      *
      * @param text Bro's response text.
      * @param img  Bro's avatar image.
@@ -102,6 +107,7 @@ public class DialogBox extends HBox {
     public static DialogBox getBroDialog(String text, Image img) {
         DialogBox db = new DialogBox(text, img);
         db.flip();
+        db.getStyleClass().add(BRO_STYLE_CLASS);
         return db;
     }
 }
