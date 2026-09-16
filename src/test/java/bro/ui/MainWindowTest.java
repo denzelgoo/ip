@@ -4,11 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import bro.Bro;
@@ -24,13 +26,25 @@ import javafx.scene.layout.VBox;
  * Unit tests for {@link MainWindow} layout and resizing behavior.
  */
 public class MainWindowTest {
+    private static boolean isJavaFxAvailable;
+
     @BeforeAll
     public static void initJavaFx() {
         try {
             Platform.startup(() -> {});
+            isJavaFxAvailable = true;
         } catch (IllegalStateException e) {
             // Platform already started
+            isJavaFxAvailable = true;
+        } catch (UnsupportedOperationException e) {
+            // Headless Linux without display (e.g. CI without xvfb)
+            isJavaFxAvailable = false;
         }
+    }
+
+    @BeforeEach
+    public void setUp() {
+        assumeTrue(isJavaFxAvailable, "Skipping test: JavaFX DISPLAY is unavailable.");
     }
 
     @Test
