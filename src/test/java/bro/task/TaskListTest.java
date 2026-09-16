@@ -3,6 +3,7 @@ package bro.task;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -304,5 +305,33 @@ public class TaskListTest {
         ArrayList<Task> allTasks = taskList.getAllTasks();
         assertEquals(1, allTasks.size());
         assertEquals(todo, allTasks.get(0));
+    }
+
+    // -------------------------------------------------------------------------
+    // Duplicate detection tests
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void hasDuplicateAndGetDuplicate_matchingAndDifferentTasks_behaveCorrectly() throws BroException {
+        TaskList taskList = new TaskList();
+        Todo todo = new Todo("buy groceries");
+        Deadline deadline = new Deadline("submit project", "2026-10-15 1800");
+        taskList.add(todo);
+        taskList.add(deadline);
+
+        Todo identicalTodo = new Todo("BUY GROCERIES");
+        assertTrue(taskList.hasDuplicate(identicalTodo));
+        assertEquals(todo, taskList.getDuplicate(identicalTodo));
+
+        Deadline identicalDeadline = new Deadline("submit project", "2026-10-15 1800");
+        assertTrue(taskList.hasDuplicate(identicalDeadline));
+        assertEquals(deadline, taskList.getDuplicate(identicalDeadline));
+
+        Todo differentTodo = new Todo("read book");
+        assertFalse(taskList.hasDuplicate(differentTodo));
+        assertNull(taskList.getDuplicate(differentTodo));
+
+        assertFalse(taskList.hasDuplicate(null));
+        assertNull(taskList.getDuplicate(null));
     }
 }

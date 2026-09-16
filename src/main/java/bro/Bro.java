@@ -33,11 +33,20 @@ public class Bro {
 
     /**
      * Constructs a Bro chatbot instance with its Storage, UserInterface, and
-     * TaskList.
+     * TaskList using the default storage file path.
      */
     public Bro() {
+        this(DATA_FILE_PATH);
+    }
+
+    /**
+     * Constructs a Bro chatbot instance using the specified storage file path.
+     *
+     * @param filePath The path to the task storage file.
+     */
+    public Bro(Path filePath) {
         this.ui = new UserInterface();
-        this.storage = new Storage(DATA_FILE_PATH);
+        this.storage = new Storage(filePath);
         this.tasks = this.storage.load(this.ui);
     }
 
@@ -47,7 +56,13 @@ public class Bro {
      * @return The welcome message string.
      */
     public String getWelcome() {
-        return ui.showWelcome();
+        String welcome = ui.showWelcome();
+        if (storage.getCorruptedLineCount() > 0) {
+            welcome += String.format(
+                    "\nHeads up bro, skipped %d corrupted line(s) in your save file.",
+                    storage.getCorruptedLineCount());
+        }
+        return welcome;
     }
 
     /**
@@ -94,8 +109,18 @@ public class Bro {
      */
     private String executeCommand(Command command, String arguments) throws BroException {
         return switch (command) {
-            case BYE -> ui.showGoodbye();
-            case LIST -> ui.showTaskList(tasks);
+            case BYE -> {
+                if (!arguments.isEmpty()) {
+                    throw new BroException("Bro, the 'bye' command doesn't take any extra arguments.");
+                }
+                yield ui.showGoodbye();
+            }
+            case LIST -> {
+                if (!arguments.isEmpty()) {
+                    throw new BroException("Bro, the 'list' command doesn't take any extra arguments.");
+                }
+                yield ui.showTaskList(tasks);
+            }
             case FIND -> executeFind(arguments);
             case TASKS -> executeTasksOnDate(arguments);
             case MARK -> executeMark(arguments, true);
@@ -106,7 +131,9 @@ public class Bro {
             case EVENT -> executeAddEvent(arguments);
             case EDIT -> executeEdit(arguments);
             case UNKNOWN -> {
-                throw new BroException("I don't get what you're trying to say bro, can you try again?");
+                throw new BroException("I don't get what you're trying to say bro, can you try again?\n"
+                        + "You can try stuff like: todo <desc>, deadline <desc> /by <date>, "
+                        + "event <desc> /from <date> /to <date>, list, mark <num>, find <keyword>");
             }
             default -> {
                 // Since unhandled commands should fall into the UNKNOWN case,
@@ -144,26 +171,54 @@ public class Bro {
     }
 
     /**
+     * Validates that the given 0-based task index exists within the current task list.
+     *
+     * @param index The 0-based task index to validate.
+     * @throws BroException If the index is out of bounds.
+     */
+    private void validateTaskIndex(int index) throws BroException {
+        if (index < 0 || index >= tasks.size()) {
+            if (tasks.isEmpty()) {
+                throw new BroException(String.format(
+                        "Bro, your list is completely empty right now, so there's no task %d.",
+                        index + 1));
+            } else {
+                String unit = tasks.size() == 1 ? "task" : "tasks";
+                throw new BroException(String.format(
+                        "Bro, task %d doesn't exist. You have %d %s, so pick a number between 1 and %d.",
+                        index + 1, tasks.size(), unit, tasks.size()));
+            }
+        }
+    }
+
+    /**
      * Executes the mark or unmark command for a task at a given index.
      *
      * @param arguments The task index argument string.
-     * @param isMark True to mark the task as done, false to mark it as not done.
+     * @param isMark    True to mark the task as done, false to mark it as not done.
      * @return The response message, or a storage error message if saving fails.
-     * @throws BroException If the index argument cannot be parsed.
+     * @throws BroException If the index argument cannot be parsed or is out of bounds.
      */
     private String executeMark(String arguments, boolean isMark) throws BroException {
         int listIndex = Parser.parseTaskIndex(arguments,
                 "Yo which task do you want to mark/unmark bro?");
+        validateTaskIndex(listIndex);
         Task task = tasks.get(listIndex);
-        String response;
         if (isMark) {
+            if (task.isDone()) {
+                return ui.showTaskAlreadyMarked(task);
+            }
             task.markDone();
-            response = ui.showTaskMarked(task);
+            String response = ui.showTaskMarked(task);
+            return saveAndFormatResponse(response, () -> task.unmarkDone());
         } else {
+            if (!task.isDone()) {
+                return ui.showTaskAlreadyUnmarked(task);
+            }
             task.unmarkDone();
-            response = ui.showTaskUnmarked(task);
+            String response = ui.showTaskUnmarked(task);
+            return saveAndFormatResponse(response, () -> task.markDone());
         }
-        return saveAndFormatResponse(response);
     }
 
     /**
@@ -171,13 +226,15 @@ public class Bro {
      *
      * @param arguments The task index argument string.
      * @return The response message, or a storage error message if saving fails.
-     * @throws BroException If the index argument cannot be parsed.
+     * @throws BroException If the index argument cannot be parsed or is out of bounds.
      */
     private String executeDelete(String arguments) throws BroException {
         int listIndex = Parser.parseTaskIndex(arguments,
                 "Which task do you want to delete bro?");
+        validateTaskIndex(listIndex);
         Task task = tasks.delete(listIndex);
-        return saveAndFormatResponse(ui.showTaskDeleted(task, tasks.size()));
+        Runnable rollback = () -> tasks.getAllTasks().add(listIndex, task);
+        return saveAndFormatResponse(ui.showTaskDeleted(task, tasks.size()), rollback);
     }
 
     /**
@@ -190,8 +247,13 @@ public class Bro {
     private String executeAddTodo(String arguments) throws BroException {
         String description = Parser.parseTodoDescription(arguments);
         Todo newTodo = new Todo(description);
+        if (tasks.hasDuplicate(newTodo)) {
+            Task existing = tasks.getDuplicate(newTodo);
+            return ui.showDuplicateTaskWarning(existing);
+        }
         tasks.add(newTodo);
-        return saveAndFormatResponse(ui.showTaskAdded(newTodo, tasks.size()));
+        Runnable rollback = () -> tasks.delete(tasks.size() - 1);
+        return saveAndFormatResponse(ui.showTaskAdded(newTodo, tasks.size()), rollback);
     }
 
     /**
@@ -204,8 +266,13 @@ public class Bro {
     private String executeAddDeadline(String arguments) throws BroException {
         DeadlineDetails details = Parser.parseDeadlineDetails(arguments);
         Deadline newDeadline = new Deadline(details.description(), details.deadline());
+        if (tasks.hasDuplicate(newDeadline)) {
+            Task existing = tasks.getDuplicate(newDeadline);
+            return ui.showDuplicateTaskWarning(existing);
+        }
         tasks.add(newDeadline);
-        return saveAndFormatResponse(ui.showTaskAdded(newDeadline, tasks.size()));
+        Runnable rollback = () -> tasks.delete(tasks.size() - 1);
+        return saveAndFormatResponse(ui.showTaskAdded(newDeadline, tasks.size()), rollback);
     }
 
     /**
@@ -218,8 +285,13 @@ public class Bro {
     private String executeAddEvent(String arguments) throws BroException {
         EventDetails details = Parser.parseEventDetails(arguments);
         Event newEvent = new Event(details.description(), details.start(), details.end());
+        if (tasks.hasDuplicate(newEvent)) {
+            Task existing = tasks.getDuplicate(newEvent);
+            return ui.showDuplicateTaskWarning(existing);
+        }
         tasks.add(newEvent);
-        return saveAndFormatResponse(ui.showTaskAdded(newEvent, tasks.size()));
+        Runnable rollback = () -> tasks.delete(tasks.size() - 1);
+        return saveAndFormatResponse(ui.showTaskAdded(newEvent, tasks.size()), rollback);
     }
 
     /**
@@ -231,35 +303,55 @@ public class Bro {
      */
     private String executeEdit(String arguments) throws BroException {
         EditDetails details = Parser.parseEditDetails(arguments);
+        validateTaskIndex(details.index());
         Task task = tasks.get(details.index());
+
+        String prevDescription = task.getDescription();
 
         if (task instanceof Todo) {
             if (details.hasBy()) {
-                throw new BroException("Bro, a todo task doesn't have a deadline (/by)!");
+                throw new BroException("Bro, a todo task doesn't have a deadline (/by).");
             }
             if (details.hasFrom() || details.hasTo()) {
-                throw new BroException("Bro, a todo task doesn't have start/end times (/from, /to)!");
+                throw new BroException("Bro, a todo task doesn't have start/end times (/from, /to).");
             }
             if (details.hasDescription()) {
                 task.setDescription(details.description());
             }
         } else if (task instanceof Deadline deadline) {
             if (details.hasFrom() || details.hasTo()) {
-                throw new BroException("Bro, a deadline task doesn't have start/end times (/from, /to)!");
+                throw new BroException("Bro, a deadline task doesn't have start/end times (/from, /to).");
             }
             TaskDateTime newDeadline = details.hasBy() ? TaskDateTime.parse(details.by()) : null;
+            TaskDateTime prevDeadline = deadline.getDeadline();
             if (details.hasDescription()) {
                 deadline.setDescription(details.description());
             }
             if (newDeadline != null) {
                 deadline.setDeadline(newDeadline);
             }
+            if (tasks.getAllTasks().stream().anyMatch(t -> t != task && t.equals(task))) {
+                deadline.setDescription(prevDescription);
+                deadline.setDeadline(prevDeadline);
+                throw new BroException("Bro, another task in your list already has those exact details.");
+            }
+            return saveAndFormatResponse(ui.showTaskEdited(task), () -> {
+                deadline.setDescription(prevDescription);
+                deadline.setDeadline(prevDeadline);
+            });
         } else if (task instanceof Event event) {
             if (details.hasBy()) {
-                throw new BroException("Bro, an event task doesn't have a deadline (/by)! Use /from or /to.");
+                throw new BroException("Bro, an event task doesn't have a deadline (/by). Use /from or /to.");
             }
             TaskDateTime newStart = details.hasFrom() ? TaskDateTime.parse(details.from()) : null;
             TaskDateTime newEnd = details.hasTo() ? TaskDateTime.parse(details.to()) : null;
+            TaskDateTime finalStart = newStart != null ? newStart : event.getStart();
+            TaskDateTime finalEnd = newEnd != null ? newEnd : event.getEnd();
+            Event.validateChronologicalOrder(finalStart, finalEnd);
+
+            TaskDateTime prevStart = event.getStart();
+            TaskDateTime prevEnd = event.getEnd();
+
             if (details.hasDescription()) {
                 event.setDescription(details.description());
             }
@@ -269,9 +361,24 @@ public class Bro {
             if (newEnd != null) {
                 event.setEnd(newEnd);
             }
+            if (tasks.getAllTasks().stream().anyMatch(t -> t != task && t.equals(task))) {
+                event.setDescription(prevDescription);
+                event.setStart(prevStart);
+                event.setEnd(prevEnd);
+                throw new BroException("Bro, another task in your list already has those exact details.");
+            }
+            return saveAndFormatResponse(ui.showTaskEdited(task), () -> {
+                event.setDescription(prevDescription);
+                event.setStart(prevStart);
+                event.setEnd(prevEnd);
+            });
         }
 
-        return saveAndFormatResponse(ui.showTaskEdited(task));
+        if (tasks.getAllTasks().stream().anyMatch(t -> t != task && t.equals(task))) {
+            task.setDescription(prevDescription);
+            throw new BroException("Bro, another task in your list already has those exact details.");
+        }
+        return saveAndFormatResponse(ui.showTaskEdited(task), () -> task.setDescription(prevDescription));
     }
 
     /**
@@ -281,8 +388,25 @@ public class Bro {
      * @return The success response message, or the storage error message if saving fails.
      */
     private String saveAndFormatResponse(String successResponse) {
+        return saveAndFormatResponse(successResponse, null);
+    }
+
+    /**
+     * Saves the current task list to storage with an optional rollback action if saving fails.
+     *
+     * @param successResponse The formatted response message if saving succeeds.
+     * @param rollbackAction  Action to run to revert in-memory modifications if save fails.
+     * @return The success response message, or the storage error message if saving fails.
+     */
+    private String saveAndFormatResponse(String successResponse, Runnable rollbackAction) {
         String error = storage.save(tasks, ui);
-        return error == null ? successResponse : error;
+        if (error != null) {
+            if (rollbackAction != null) {
+                rollbackAction.run();
+            }
+            return error;
+        }
+        return successResponse;
     }
 
     /**

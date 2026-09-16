@@ -4,7 +4,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.util.Locale;
+import java.util.Objects;
+import java.util.regex.Pattern;
 
 import bro.exception.BroException;
 
@@ -15,21 +18,27 @@ import bro.exception.BroException;
  * while gracefully falling back to storing unparseable inputs as raw strings.
  */
 public class TaskDateTime {
+    private static final Pattern CALENDAR_DATE_LIKE = Pattern.compile(
+            "^\\d{1,4}[-/]\\d{1,2}[-/]\\d{1,4}(\\s+.*)?$");
+
     private static final DateTimeFormatter[] DATE_TIME_FORMATTERS = {
-            DateTimeFormatter.ofPattern("d/M/yyyy HHmm"),
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm"),
-            DateTimeFormatter.ofPattern("d-M-yyyy HHmm"),
-            DateTimeFormatter.ofPattern("d/M/yyyy HH:mm"),
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"),
-            DateTimeFormatter.ofPattern("d-M-yyyy HH:mm"),
-            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")
+            DateTimeFormatter.ofPattern("d/M/uuuu HHmm").withResolverStyle(ResolverStyle.STRICT),
+            DateTimeFormatter.ofPattern("uuuu-MM-dd HHmm").withResolverStyle(ResolverStyle.STRICT),
+            DateTimeFormatter.ofPattern("uuuu-M-d HHmm").withResolverStyle(ResolverStyle.STRICT),
+            DateTimeFormatter.ofPattern("d-M-uuuu HHmm").withResolverStyle(ResolverStyle.STRICT),
+            DateTimeFormatter.ofPattern("d/M/uuuu HH:mm").withResolverStyle(ResolverStyle.STRICT),
+            DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm").withResolverStyle(ResolverStyle.STRICT),
+            DateTimeFormatter.ofPattern("uuuu-M-d HH:mm").withResolverStyle(ResolverStyle.STRICT),
+            DateTimeFormatter.ofPattern("d-M-uuuu HH:mm").withResolverStyle(ResolverStyle.STRICT),
+            DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm").withResolverStyle(ResolverStyle.STRICT)
     };
 
     private static final DateTimeFormatter[] DATE_FORMATTERS = {
-            DateTimeFormatter.ofPattern("yyyy-MM-dd"),
-            DateTimeFormatter.ofPattern("d/M/yyyy"),
-            DateTimeFormatter.ofPattern("d-M-yyyy"),
-            DateTimeFormatter.ofPattern("yyyy/M/d")
+            DateTimeFormatter.ofPattern("uuuu-MM-dd").withResolverStyle(ResolverStyle.STRICT),
+            DateTimeFormatter.ofPattern("uuuu-M-d").withResolverStyle(ResolverStyle.STRICT),
+            DateTimeFormatter.ofPattern("d/M/uuuu").withResolverStyle(ResolverStyle.STRICT),
+            DateTimeFormatter.ofPattern("d-M-uuuu").withResolverStyle(ResolverStyle.STRICT),
+            DateTimeFormatter.ofPattern("uuuu/M/d").withResolverStyle(ResolverStyle.STRICT)
     };
 
     private static final DateTimeFormatter DISPLAY_DATE_TIME = DateTimeFormatter.ofPattern("MMM dd yyyy, h:mma",
@@ -78,16 +87,17 @@ public class TaskDateTime {
     /**
      * Parses a date or date-time string into a TaskDateTime object.
      * If the input matches a recognized format, it is parsed into a LocalDateTime.
+     * If it looks like a calendar date but is invalid, an error is thrown.
      * Otherwise, it is preserved as a raw string so non-standard inputs (e.g.,
      * "2pm", "Sunday") continue to work.
      *
      * @param input The raw input string containing date or date-time information.
      * @return A parsed TaskDateTime instance.
-     * @throws BroException If the input string is null or empty.
+     * @throws BroException If the input string is null, empty, or an invalid calendar date.
      */
     public static TaskDateTime parse(String input) throws BroException {
         if (input == null || input.trim().isEmpty()) {
-            throw new BroException("\tBro, you can't have an empty date!");
+            throw new BroException("Bro, you can't have an empty date.");
         }
 
         String trimmed = input.trim();
@@ -110,6 +120,12 @@ public class TaskDateTime {
             } catch (DateTimeParseException ignored) {
                 // Try next formatter
             }
+        }
+
+        // If input looks like a formatted date/time but failed strict parsing, it's invalid calendar date
+        if (CALENDAR_DATE_LIKE.matcher(trimmed).matches()) {
+            throw new BroException(String.format(
+                    "Bro, '%s' isn't a real date on the calendar, check your date again.", trimmed));
         }
 
         // 3. Fallback: store as raw string if not matching any date/time pattern
@@ -217,7 +233,7 @@ public class TaskDateTime {
      */
     public static LocalDate parseQueryDate(String input) throws BroException {
         if (input == null || input.trim().isEmpty()) {
-            throw new BroException("\tBro, please tell me which date you want to check (e.g. tasks 27/8/2026).");
+            throw new BroException("Bro, please tell me which date you want to check (e.g. tasks 27/8/2026).");
         }
 
         String trimmed = input.trim();
@@ -240,8 +256,41 @@ public class TaskDateTime {
             }
         }
 
-        throw new BroException("\tBro, please use a valid date format like 'd/M/yyyy' (e.g. 27/8/2026) "
-                + "or 'yyyy-MM-dd' (e.g. 2026-08-27)!");
+        if (CALENDAR_DATE_LIKE.matcher(trimmed).matches()) {
+            throw new BroException(String.format(
+                    "Bro, '%s' isn't a real date on the calendar, check your date again.", trimmed));
+        }
+
+        throw new BroException("Bro, please use a valid date format like 'd/M/yyyy' (e.g. 27/8/2026) "
+                + "or 'yyyy-MM-dd' (e.g. 2026-08-27).");
+    }
+
+    /**
+     * Checks if this TaskDateTime occurs before another TaskDateTime.
+     * Only comparable if both instances have parsed date/times.
+     *
+     * @param other The other TaskDateTime to compare against.
+     * @return True if this date/time is before the other, false otherwise.
+     */
+    public boolean isBefore(TaskDateTime other) {
+        if (this.dateTime != null && other != null && other.dateTime != null) {
+            return this.dateTime.isBefore(other.dateTime);
+        }
+        return false;
+    }
+
+    /**
+     * Checks if this TaskDateTime occurs after another TaskDateTime.
+     * Only comparable if both instances have parsed date/times.
+     *
+     * @param other The other TaskDateTime to compare against.
+     * @return True if this date/time is after the other, false otherwise.
+     */
+    public boolean isAfter(TaskDateTime other) {
+        if (this.dateTime != null && other != null && other.dateTime != null) {
+            return this.dateTime.isAfter(other.dateTime);
+        }
+        return false;
     }
 
     /**
@@ -251,5 +300,32 @@ public class TaskDateTime {
      */
     public String getRawString() {
         return rawString;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof TaskDateTime other)) {
+            return false;
+        }
+        if (this.dateTime != null && other.dateTime != null) {
+            return this.dateTime.isEqual(other.dateTime) && this.hasTime == other.hasTime;
+        }
+        if (this.dateTime == null && other.dateTime == null) {
+            return Objects.equals(
+                    this.rawString == null ? null : this.rawString.trim().toLowerCase(),
+                    other.rawString == null ? null : other.rawString.trim().toLowerCase());
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        if (dateTime != null) {
+            return Objects.hash(dateTime, hasTime);
+        }
+        return Objects.hash(rawString == null ? null : rawString.trim().toLowerCase());
     }
 }

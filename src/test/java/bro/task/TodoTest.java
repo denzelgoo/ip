@@ -84,6 +84,19 @@ public class TodoTest {
     }
 
     @Test
+    public void equalsAndHashCode_matchingAndDifferent_behaveCorrectly() {
+        Todo t1 = new Todo("buy groceries");
+        Todo t2 = new Todo("BUY GROCERIES");
+        Todo t3 = new Todo("read book");
+
+        assertEquals(t1, t2);
+        assertEquals(t1.hashCode(), t2.hashCode());
+        assertFalse(t1.equals(t3));
+        assertFalse(t1.equals(null));
+        assertFalse(t1.equals("buy groceries"));
+    }
+
+    @Test
     public void setDescription_completedTodo_preservesDoneStatus() {
         Todo todo = new Todo("initial description");
         todo.markDone();

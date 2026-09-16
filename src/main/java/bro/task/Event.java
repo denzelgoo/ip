@@ -1,6 +1,7 @@
 package bro.task;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 import bro.exception.BroException;
 
@@ -18,12 +19,30 @@ public class Event extends Task {
      * @param description The description of the event.
      * @param startStr    The date or date-time string for the start of the event.
      * @param endStr      The date or date-time string for the end of the event.
-     * @throws BroException If either date/time string cannot be parsed.
+     * @throws BroException If either date/time string cannot be parsed or if end is before start.
      */
     public Event(String description, String startStr, String endStr) throws BroException {
         super(description);
-        this.start = TaskDateTime.parse(startStr);
-        this.end = TaskDateTime.parse(endStr);
+        TaskDateTime parsedStart = TaskDateTime.parse(startStr);
+        TaskDateTime parsedEnd = TaskDateTime.parse(endStr);
+        validateChronologicalOrder(parsedStart, parsedEnd);
+        this.start = parsedStart;
+        this.end = parsedEnd;
+    }
+
+    /**
+     * Validates that the event's end time does not occur before its start time.
+     *
+     * @param start The start date/time.
+     * @param end   The end date/time.
+     * @throws BroException If end is chronologically before start.
+     */
+    public static void validateChronologicalOrder(TaskDateTime start, TaskDateTime end) throws BroException {
+        if (start != null && end != null && end.isBefore(start)) {
+            throw new BroException(String.format(
+                    "Bro, an event can't end before it even starts.\nStart: %s\nEnd: %s",
+                    start.formatDisplay(), end.formatDisplay()));
+        }
     }
 
     /**
@@ -114,6 +133,20 @@ public class Event extends Task {
     public String toString() {
         return String.format("[E]%s (from: %s to: %s)", super.toString(),
                 this.start.formatDisplay(), this.end.formatDisplay());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!super.equals(obj)) {
+            return false;
+        }
+        Event other = (Event) obj;
+        return Objects.equals(this.start, other.start) && Objects.equals(this.end, other.end);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), start, end);
     }
 
     /**

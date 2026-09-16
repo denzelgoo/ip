@@ -154,5 +154,19 @@ public class DeadlineTest {
         Deadline deadline = new Deadline("submit report", "2026-09-15");
         assertThrows(BroException.class, () -> deadline.setDeadline(""));
     }
+
+    @Test
+    public void equalsAndHashCode_matchingAndDifferent_behaveCorrectly() throws BroException {
+        Deadline d1 = new Deadline("submit report", "2026-09-15");
+        Deadline d2 = new Deadline("SUBMIT REPORT", "2026-09-15");
+        Deadline d3 = new Deadline("submit report", "2026-09-16");
+        Deadline d4 = new Deadline("other report", "2026-09-15");
+
+        assertEquals(d1, d2);
+        assertEquals(d1.hashCode(), d2.hashCode());
+        assertFalse(d1.equals(d3));
+        assertFalse(d1.equals(d4));
+        assertFalse(d1.equals(null));
+    }
 }
 

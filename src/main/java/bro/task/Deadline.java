@@ -74,6 +74,20 @@ public class Deadline extends Task {
         return String.format("[D]%s (by: %s)", super.toString(), this.deadline.formatDisplay());
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (!super.equals(obj)) {
+            return false;
+        }
+        Deadline other = (Deadline) obj;
+        return java.util.Objects.equals(this.deadline, other.deadline);
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(super.hashCode(), deadline);
+    }
+
     /**
      * Returns a string representation of the Deadline task formatted for file
      * storage.

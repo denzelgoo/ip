@@ -223,4 +223,65 @@ public class TaskDateTimeTest {
         BroException e = assertThrows(BroException.class, () -> TaskDateTime.parseQueryDate("invalid date"));
         assertTrue(e.getMessage().contains("please use a valid date format"));
     }
+
+    // -------------------------------------------------------------------------
+    // Impossible calendar date rejection tests
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void parse_calendarDateLikeImpossibleDate_exceptionThrown() {
+        BroException e1 = assertThrows(BroException.class, () -> TaskDateTime.parse("2026-02-30"));
+        assertTrue(e1.getMessage().contains("isn't a real date on the calendar"));
+
+        BroException e2 = assertThrows(BroException.class, () -> TaskDateTime.parse("2026-02-30 1800"));
+        assertTrue(e2.getMessage().contains("isn't a real date on the calendar"));
+
+        BroException e3 = assertThrows(BroException.class, () -> TaskDateTime.parse("31/4/2026"));
+        assertTrue(e3.getMessage().contains("isn't a real date on the calendar"));
+
+        BroException e4 = assertThrows(BroException.class, () -> TaskDateTime.parse("2026-13-01"));
+        assertTrue(e4.getMessage().contains("isn't a real date on the calendar"));
+    }
+
+    // -------------------------------------------------------------------------
+    // isBefore and isAfter tests
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void isBeforeAndIsAfter_comparisons_correctBooleanReturned() throws BroException {
+        TaskDateTime dt1 = TaskDateTime.parse("2026-10-15 1000");
+        TaskDateTime dt2 = TaskDateTime.parse("2026-10-15 1200");
+        TaskDateTime raw = TaskDateTime.parse("someday");
+
+        assertTrue(dt1.isBefore(dt2));
+        assertTrue(dt2.isAfter(dt1));
+        assertFalse(dt1.isAfter(dt2));
+        assertFalse(dt2.isBefore(dt1));
+
+        assertFalse(dt1.isBefore(raw));
+        assertFalse(raw.isBefore(dt1));
+        assertFalse(dt1.isBefore(null));
+    }
+
+    // -------------------------------------------------------------------------
+    // equals and hashCode tests
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void equalsAndHashCode_variousInputs_behaveCorrectly() throws BroException {
+        TaskDateTime dt1 = TaskDateTime.parse("2026-10-15 1000");
+        TaskDateTime dt2 = TaskDateTime.parse("2026-10-15 10:00");
+        TaskDateTime dt3 = TaskDateTime.parse("2026-10-15 1200");
+        TaskDateTime raw1 = TaskDateTime.parse("later");
+        TaskDateTime raw2 = TaskDateTime.parse("LATER");
+
+        assertEquals(dt1, dt2);
+        assertEquals(dt1.hashCode(), dt2.hashCode());
+        assertFalse(dt1.equals(dt3));
+        assertEquals(raw1, raw2);
+        assertEquals(raw1.hashCode(), raw2.hashCode());
+        assertFalse(dt1.equals(raw1));
+        assertFalse(dt1.equals(null));
+        assertFalse(dt1.equals("string"));
+    }
 }

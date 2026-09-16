@@ -179,5 +179,39 @@ public class EventTest {
         assertThrows(BroException.class, () -> event.setStart(""));
         assertThrows(BroException.class, () -> event.setEnd(""));
     }
+
+    @Test
+    public void constructor_endBeforeStart_exceptionThrown() {
+        BroException e1 = assertThrows(BroException.class, () ->
+                new Event("meeting", "2026-08-30", "2026-08-28"));
+        assertTrue(e1.getMessage().contains("can't end before it even starts"));
+
+        BroException e2 = assertThrows(BroException.class, () ->
+                new Event("meeting", "2026-08-28 1800", "2026-08-28 1700"));
+        assertTrue(e2.getMessage().contains("can't end before it even starts"));
+    }
+
+    @Test
+    public void validateChronologicalOrder_endBeforeStart_exceptionThrown() throws BroException {
+        TaskDateTime start = TaskDateTime.parse("2026-08-30");
+        TaskDateTime end = TaskDateTime.parse("2026-08-28");
+        BroException e = assertThrows(BroException.class, () ->
+                Event.validateChronologicalOrder(start, end));
+        assertTrue(e.getMessage().contains("can't end before it even starts"));
+    }
+
+    @Test
+    public void equalsAndHashCode_matchingAndDifferent_behaveCorrectly() throws BroException {
+        Event e1 = new Event("hackathon", "2026-08-28", "2026-08-30");
+        Event e2 = new Event("HACKATHON", "2026-08-28", "2026-08-30");
+        Event e3 = new Event("hackathon", "2026-08-29", "2026-08-30");
+        Event e4 = new Event("hackathon", "2026-08-28", "2026-08-31");
+
+        assertEquals(e1, e2);
+        assertEquals(e1.hashCode(), e2.hashCode());
+        assertFalse(e1.equals(e3));
+        assertFalse(e1.equals(e4));
+        assertFalse(e1.equals(null));
+    }
 }
 

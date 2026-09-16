@@ -294,28 +294,37 @@ public class ParserTest {
     @Test
     public void parseExceptions_thrownMessages_containNoLeadingTab() {
         BroException todoEx = assertThrows(BroException.class, () -> Parser.parseTodoDescription(""));
-        assertEquals("Sorry bro, you can't have an empty todo.", todoEx.getMessage());
+        assertEquals("Sorry bro, you can't have an empty todo.\n"
+                + "Format: todo <description> (e.g. todo read book)", todoEx.getMessage());
 
         BroException deadlineEmptyEx = assertThrows(BroException.class, () -> Parser.parseDeadlineArguments(""));
-        assertEquals("Sorry bro, you can't have an empty deadline.", deadlineEmptyEx.getMessage());
+        assertEquals("Sorry bro, you can't have an empty deadline.\n"
+                + "Format: deadline <description> /by <deadline> (e.g. deadline return book /by 2026-10-15 1800)",
+                deadlineEmptyEx.getMessage());
 
         BroException deadlineFormatEx = assertThrows(BroException.class, () ->
                 Parser.parseDeadlineArguments("read book by tomorrow"));
         assertEquals(
-                "I think you forgot to add the deadline bro, write 'deadline [description] /by [deadline]'",
+                "I think you forgot to add the deadline bro.\n"
+                + "Format: deadline <description> /by <deadline> (e.g. deadline return book /by 2026-10-15 1800)",
                 deadlineFormatEx.getMessage());
 
         BroException eventEmptyEx = assertThrows(BroException.class, () -> Parser.parseEventArguments(""));
-        assertEquals("Sorry bro, you can't have an empty event.", eventEmptyEx.getMessage());
+        assertEquals("Sorry bro, you can't have an empty event.\n"
+                + "Format: event <description> /from <start> /to <end> "
+                + "(e.g. event camp /from 2026-10-10 /to 2026-10-12)", eventEmptyEx.getMessage());
 
         BroException eventFormatEx = assertThrows(BroException.class, () ->
                 Parser.parseEventArguments("party /to 6pm"));
         assertEquals(
-                "I think you messed up the event format bro, write 'event [description] /from [start] /to [end]'",
+                "I think you messed up the event format bro.\n"
+                + "Format: event <description> /from <start> /to <end> "
+                + "(e.g. event camp /from 2026-10-10 /to 2026-10-12)",
                 eventFormatEx.getMessage());
 
         BroException findEmptyEx = assertThrows(BroException.class, () -> Parser.parseFindKeywords(""));
-        assertEquals("Bro, what are you trying to find? Please provide some keywords.", findEmptyEx.getMessage());
+        assertEquals("Bro, what are you trying to find? Please provide some keywords.\n"
+                + "Format: find <keyword1>, <keyword2> (e.g. find book, project)", findEmptyEx.getMessage());
     }
 
     // -------------------------------------------------------------------------
@@ -410,5 +419,63 @@ public class ParserTest {
     @Test
     public void parseEditDetails_invalidIndexFormat_throwsNumberFormatException() {
         assertThrows(NumberFormatException.class, () -> Parser.parseEditDetails("abc /desc new task"));
+    }
+
+    // -------------------------------------------------------------------------
+    // Delimiter and newline validation tests
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void parse_delimiterOrNewline_exceptionThrown() {
+        BroException e1 = assertThrows(BroException.class, () ->
+                Parser.parseTodoDescription("read | book"));
+        assertTrue(e1.getMessage().contains("can't have the '|' character"));
+
+        BroException e2 = assertThrows(BroException.class, () ->
+                Parser.parseTodoDescription("read\nbook"));
+        assertTrue(e2.getMessage().contains("can't have newline characters"));
+
+        BroException e3 = assertThrows(BroException.class, () ->
+                Parser.parseDeadlineArguments("read | book /by 2026-10-15"));
+        assertTrue(e3.getMessage().contains("can't have the '|' character"));
+
+        BroException e4 = assertThrows(BroException.class, () ->
+                Parser.parseDeadlineArguments("read book /by 2026-10-15 | 1800"));
+        assertTrue(e4.getMessage().contains("can't have the '|' character"));
+
+        BroException e5 = assertThrows(BroException.class, () ->
+                Parser.parseEventArguments("camp /from 2026-10-15 | 1000 /to 2026-10-16"));
+        assertTrue(e5.getMessage().contains("can't have the '|' character"));
+
+        BroException e6 = assertThrows(BroException.class, () ->
+                Parser.parseEditDetails("1 /desc test\rtest"));
+        assertTrue(e6.getMessage().contains("can't have newline characters"));
+    }
+
+    // -------------------------------------------------------------------------
+    // Duplicate flags tests
+    // -------------------------------------------------------------------------
+
+    @Test
+    public void parse_duplicateFlags_exceptionThrown() {
+        BroException e1 = assertThrows(BroException.class, () ->
+                Parser.parseDeadlineArguments("read book /by 2026-10-15 /by 2026-10-16"));
+        assertTrue(e1.getMessage().contains("more than once"));
+
+        BroException e2 = assertThrows(BroException.class, () ->
+                Parser.parseEventArguments("camp /from 2026-10-15 /from 2026-10-16 /to 2026-10-17"));
+        assertTrue(e2.getMessage().contains("more than once"));
+
+        BroException e3 = assertThrows(BroException.class, () ->
+                Parser.parseEventArguments("camp /from 2026-10-15 /to 2026-10-16 /to 2026-10-17"));
+        assertTrue(e3.getMessage().contains("more than once"));
+
+        BroException e4 = assertThrows(BroException.class, () ->
+                Parser.parseEditDetails("1 /desc task1 /desc task2"));
+        assertTrue(e4.getMessage().contains("more than once"));
+
+        BroException e5 = assertThrows(BroException.class, () ->
+                Parser.parseEditDetails("1 /by 2026-10-15 /by 2026-10-16"));
+        assertTrue(e5.getMessage().contains("more than once"));
     }
 }
