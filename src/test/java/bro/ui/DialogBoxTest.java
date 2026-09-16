@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import javafx.application.Platform;
+import javafx.geometry.Pos;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.shape.Circle;
@@ -31,6 +32,7 @@ public class DialogBoxTest {
         DialogBox db = DialogBox.getUserDialog("Hello bro!", img);
         assertNotNull(db);
         assertTrue(db.getStyleClass().contains("user-dialog"));
+        assertEquals(Pos.BOTTOM_RIGHT, db.getAlignment());
 
         ImageView displayPicture = (ImageView) db.getChildren().stream()
                 .filter(node -> node instanceof ImageView)
@@ -52,6 +54,7 @@ public class DialogBoxTest {
         DialogBox db = DialogBox.getBroDialog("What's up bro!", img);
         assertNotNull(db);
         assertTrue(db.getStyleClass().contains("bro-dialog"));
+        assertEquals(Pos.BOTTOM_LEFT, db.getAlignment());
 
         ImageView displayPicture = (ImageView) db.getChildren().stream()
                 .filter(node -> node instanceof ImageView)
