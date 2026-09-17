@@ -30,6 +30,7 @@ True to his name, Bro interacts with you just like a laid-back close friend: alw
   - [Editing the data file](#editing-the-data-file)
 - [FAQ](#faq)
 - [Command Summary](#command-summary)
+- [Acknowledgements & AI Assistance](#acknowledgements--ai-assistance)
 
 ---
 
@@ -336,3 +337,21 @@ A: Bro will let you know what valid range of task numbers you have (e.g., betwee
 | **Query Date** | `tasks <DATE>` | `tasks 2026-10-15` |
 | **Delete Task** | `delete <INDEX>` | `delete 1` |
 | **Exit** | `bye` | `bye` |
+
+---
+
+## Acknowledgements & AI Assistance
+
+Generative AI tools were used responsibly throughout the development of this project. The specific AI models utilized were:
+
+- **Gemini 3.7 Flash**
+- **Gemini 3.8 Flash**
+- **GPT-5.6 Luna**
+
+Specific areas where AI assistance was utilized include:
+
+- **Implementation Planning & Design**: Brainstorming implementation strategies and outlining step-by-step design plans when evaluating alternative approaches for new features and structural enhancements.
+- **Feature Increments**: Assisting in the design and implementation of specific increments, including GUI enhancements (speech bubbles, avatar positioning, and responsive window resizing) and comprehensive error handling with input validation.
+- **Code Refactoring & Quality**: Refactoring existing code for readability, separation of concerns, and ensuring strict compliance with the SE-EDU Java Coding Standard (resolving Checkstyle violations, proper member ordering, and naming conventions).
+- **Automated Testing**: Assisting in drafting, structuring, and verifying JUnit 5 unit and integration tests across parser logic, domain models, and chatbot workflows.
+- **Documentation & Git**: Assisting in drafting and structuring this User Guide and composing detailed, descriptive Git commit messages and Pull Request descriptions.
