@@ -226,7 +226,7 @@ Searches your task list for tasks whose descriptions match one or more keywords 
 
 ### Viewing tasks on a date: `tasks`
 
-Filters and displays all deadlines and events that fall on or span across a specified calendar date.
+Displays tasks scheduled on a specified calendar date, along with any active incomplete to-do tasks.
 
 - **Format**: `tasks <DATE>`
 - **Example**: `tasks 2026-10-15`
@@ -234,8 +234,11 @@ Filters and displays all deadlines and events that fall on or span across a spec
 
   ```text
   Here are the tasks happening on Oct 15 2026 bro:
-  1. [E][ ] faculty career fair (from: Oct 15 2026, 10:00AM to: Oct 15 2026, 5:00PM)
+  1. [T][ ] read book
+  2. [E][ ] faculty career fair (from: Oct 15 2026, 10:00AM to: Oct 15 2026, 5:00PM)
   ```
+
+> **Tip:** Incomplete to-do tasks will always be displayed regardless of what date is entered, as they remain active until marked done. Once marked as done, they will no longer appear in date queries.
 
 ---
 
